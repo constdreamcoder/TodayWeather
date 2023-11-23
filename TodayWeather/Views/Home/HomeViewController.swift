@@ -47,7 +47,7 @@ final class HomeViewController: UIViewController {
         // TODO: 사용자가 터치 시 색깔 정하기
         button.setTitleColor(.clear, for: .highlighted)
         button.layer.cornerRadius = 20.0
-        button.addTarget(self, action: #selector(gotoSearchLocations), for: .touchUpInside)
+        button.addTarget(self, action: #selector(gotoDetailForecast), for: .touchUpInside)
         return button
     }()
     
@@ -56,23 +56,18 @@ final class HomeViewController: UIViewController {
         
         view.setMainBackgroundColor()
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "bell")?.withTintColor(.white, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(gotoNotifications))
-        
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchLocationButton)
-        
+        setupNavigationBar()
         setupViews()
-    }
-    
-    @objc func gotoNotifications() {
-        print("알림 센터로 이동")
-    }
-    
-    @objc func gotoSearchLocations() {
-        print("위치 검색으로 이동")
     }
 }
 
 private extension HomeViewController {
+    func setupNavigationBar() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "bell")?.withTintColor(.white, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(gotoNotifications))
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchLocationButton)
+    }
+    
     func setupViews() {
         [
             skyConditionImageView,
@@ -97,6 +92,23 @@ private extension HomeViewController {
             $0.height.equalTo(64.0)
             $0.width.equalTo(220.0)
         }
+    }
+}
+
+// MARK: - 이벤트 관련 메소드
+private extension HomeViewController {
+    @objc func gotoNotifications() {
+        print("알림 센터로 이동")
+    }
+    
+    @objc func gotoSearchLocations() {
+        print("위치 검색으로 이동")
+    }
+    
+    @objc func gotoDetailForecast() {
+        let detailVC = UINavigationController(rootViewController: DetailViewController())
+        detailVC.modalPresentationStyle = .overFullScreen
+        present(detailVC, animated: true, completion: nil)
     }
 }
 

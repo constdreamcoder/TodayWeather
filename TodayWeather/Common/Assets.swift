@@ -13,4 +13,8 @@ final class Assets {
     static let windIcon = "windIcon"
     static let humidityIcon = "humidityIcon"
     static let loctionaIcon = "locationIcon"
+    
+    // MARK: - Detail Images
+    static let calendarIcon = "calendarIcon"
+    static let settingsIcon = "settingsIcon"
 }
