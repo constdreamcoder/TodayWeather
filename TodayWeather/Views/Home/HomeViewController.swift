@@ -99,6 +99,14 @@ private extension HomeViewController {
 private extension HomeViewController {
     @objc func gotoNotifications() {
         print("알림 센터로 이동")
+        let notificationVC = UINavigationController(rootViewController: NotificationViewController())
+        if let sheet = notificationVC.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 30.0
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+        }
+        navigationController?.present(notificationVC, animated: true, completion: nil)
     }
     
     @objc func gotoSearchLocations() {

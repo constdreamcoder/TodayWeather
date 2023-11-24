@@ -17,4 +17,7 @@ final class Assets {
     // MARK: - Detail Images
     static let calendarIcon = "calendarIcon"
     static let settingsIcon = "settingsIcon"
+    
+    // MARK: - Notification Images
+    static let upIcon = "upIcon"
 }
