@@ -20,4 +20,7 @@ final class Assets {
     
     // MARK: - Notification Images
     static let upIcon = "upIcon"
+    
+    // MARK: - Search Images
+    static let focusIcon = "focusIcon"
 }

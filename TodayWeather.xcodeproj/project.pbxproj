@@ -30,6 +30,8 @@
 		00A2B6AE2B0F894900ACF23A /* NextForecastTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A2B6AD2B0F894900ACF23A /* NextForecastTableView.swift */; };
 		00C75D012B107D6F0072DCB9 /* NotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C75D002B107D6F0072DCB9 /* NotificationViewController.swift */; };
 		00C75D032B1093700072DCB9 /* NotificationTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C75D022B1093700072DCB9 /* NotificationTableViewCell.swift */; };
+		00EAC3732B1189A400230842 /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EAC3722B1189A400230842 /* SearchViewController.swift */; };
+		00EAC3752B11B54100230842 /* SearchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EAC3742B11B54100230842 /* SearchTableViewCell.swift */; };
 		476B89DEC2036F76B11596B1 /* Pods_TodayWeatherTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2989AAB6F5B6DEE4E5D5E9E /* Pods_TodayWeatherTests.framework */; };
 		4E8967B367DCF037DAA6741A /* Pods_TodayWeather_TodayWeatherUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8730360EAEB0C37BED4877E5 /* Pods_TodayWeather_TodayWeatherUITests.framework */; };
 		7FDFA50FB2701609474E3463 /* Pods_TodayWeather.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FF8E9A83D6359F669A91D563 /* Pods_TodayWeather.framework */; };
@@ -80,6 +82,8 @@
 		00A2B6AD2B0F894900ACF23A /* NextForecastTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextForecastTableView.swift; sourceTree = "<group>"; };
 		00C75D002B107D6F0072DCB9 /* NotificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewController.swift; sourceTree = "<group>"; };
 		00C75D022B1093700072DCB9 /* NotificationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationTableViewCell.swift; sourceTree = "<group>"; };
+		00EAC3722B1189A400230842 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
+		00EAC3742B11B54100230842 /* SearchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTableViewCell.swift; sourceTree = "<group>"; };
 		67A0C893E658532FC15B9CE9 /* Pods-TodayWeather.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayWeather.debug.xcconfig"; path = "Target Support Files/Pods-TodayWeather/Pods-TodayWeather.debug.xcconfig"; sourceTree = "<group>"; };
 		8730360EAEB0C37BED4877E5 /* Pods_TodayWeather_TodayWeatherUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TodayWeather_TodayWeatherUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		892D7F31A143C56450C318C2 /* Pods-TodayWeather-TodayWeatherUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayWeather-TodayWeatherUITests.release.xcconfig"; path = "Target Support Files/Pods-TodayWeather-TodayWeatherUITests/Pods-TodayWeather-TodayWeatherUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -215,6 +219,7 @@
 		007C6FB42B0B92D60035BD38 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				00EAC3712B11899700230842 /* Search */,
 				00C75CFF2B107CB90072DCB9 /* Notification */,
 				004148522B0E26EE005C14D6 /* Detail */,
 				007090242B0C89C3006DAD5C /* Home */,
@@ -264,6 +269,15 @@
 				00C75D022B1093700072DCB9 /* NotificationTableViewCell.swift */,
 			);
 			path = Notification;
+			sourceTree = "<group>";
+		};
+		00EAC3712B11899700230842 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				00EAC3722B1189A400230842 /* SearchViewController.swift */,
+				00EAC3742B11B54100230842 /* SearchTableViewCell.swift */,
+			);
+			path = Search;
 			sourceTree = "<group>";
 		};
 		AE41F0ED105710A8271320C9 /* Frameworks */ = {
@@ -531,10 +545,12 @@
 				007C6F882B0B8F4E0035BD38 /* HomeViewController.swift in Sources */,
 				007C6FBC2B0BA1640035BD38 /* Colors.swift in Sources */,
 				007C0A5E2B0C5BB9007A4591 /* WeatherConditionCustomStackView.swift in Sources */,
+				00EAC3732B1189A400230842 /* SearchViewController.swift in Sources */,
 				007C0A5A2B0C5823007A4591 /* Assets.swift in Sources */,
 				007C0A622B0C862F007A4591 /* UIButton+Extensions.swift in Sources */,
 				007C6F842B0B8F4E0035BD38 /* AppDelegate.swift in Sources */,
 				00078C6C2B0F12930035A466 /* TodayWeatherCollectionView.swift in Sources */,
+				00EAC3752B11B54100230842 /* SearchTableViewCell.swift in Sources */,
 				007C6FB92B0BA0040035BD38 /* UIView+Extensions.swift in Sources */,
 				004148542B0E270D005C14D6 /* DetailViewController.swift in Sources */,
 				00A2B6AA2B0F596200ACF23A /* NextForecastTableViewCell.swift in Sources */,
@@ -717,6 +733,8 @@
 				DEVELOPMENT_TEAM = 59V6NJY3X6;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TodayWeather/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "현재 위치사용을 허용하시겠습니까?";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "현재 위치사용을 허용하시겠습니까?";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -727,7 +745,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.scdreamricher.TodayWeather;
+				PRODUCT_BUNDLE_IDENTIFIER = com.constdreamcoder.TodayWeather;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -749,6 +767,8 @@
 				DEVELOPMENT_TEAM = 59V6NJY3X6;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TodayWeather/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "현재 위치사용을 허용하시겠습니까?";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "현재 위치사용을 허용하시겠습니까?";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -759,7 +779,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.scdreamricher.TodayWeather;
+				PRODUCT_BUNDLE_IDENTIFIER = com.constdreamcoder.TodayWeather;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

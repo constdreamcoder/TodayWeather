@@ -98,7 +98,6 @@ private extension HomeViewController {
 // MARK: - 이벤트 관련 메소드
 private extension HomeViewController {
     @objc func gotoNotifications() {
-        print("알림 센터로 이동")
         let notificationVC = UINavigationController(rootViewController: NotificationViewController())
         if let sheet = notificationVC.sheetPresentationController {
             sheet.detents = [.medium(), .large()]
@@ -110,7 +109,8 @@ private extension HomeViewController {
     }
     
     @objc func gotoSearchLocations() {
-        print("위치 검색으로 이동")
+        let searchVC = SearchViewController()
+        navigationController?.pushViewController(searchVC, animated: true)
     }
     
     @objc func gotoDetailForecast() {
