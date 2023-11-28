@@ -7,6 +7,8 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 enum Forecast {
     case windy
@@ -17,14 +19,14 @@ final class TodayWeatherInfoStackView: UIStackView {
     
     private lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.text = "오늘, 9월 12일"
+        label.text = "오늘, _월 _일"
         label.textColor = .white
         return label
     }()
     
     private lazy var temperatureLabel: UILabel = {
         let label = UILabel()
-        label.text = "24°C"
+        label.text = "_°C"
         label.font = .systemFont(ofSize: 100.0)
         label.textColor = .white
         return label
@@ -32,7 +34,7 @@ final class TodayWeatherInfoStackView: UIStackView {
     
     private lazy var skyConditionLabel: UILabel = {
         let label = UILabel()
-        label.text = "맑음"
+        label.text = "_"
         label.font = .systemFont(ofSize: 24.0)
         label.textColor = .white
         return label
@@ -48,10 +50,13 @@ final class TodayWeatherInfoStackView: UIStackView {
         return stackView
     }()
     
+    private var disposeBag = DisposeBag()
+        
     init() {
         super.init(frame: .zero)
         
         setupSubViews()
+        updateViews()
     }
     
     required init(coder: NSCoder) {
@@ -88,5 +93,22 @@ private extension TodayWeatherInfoStackView {
         todayHumidityInfoStackView.snp.makeConstraints {
             $0.leading.equalTo(todayWindInfoStackView.snp.leading)
         }
+    }
+    
+    func updateViews() {
+        HomeViewModel.shared.currentWeatherConditionObservable
+            .map { $0.todayDate.getTodayDate }
+            .bind(to: dateLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        HomeViewModel.shared.currentWeatherConditionObservable
+            .map { "\($0.temperature)°C" }
+            .bind(to: temperatureLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        HomeViewModel.shared.currentWeatherConditionObservable
+            .map { $0.skyCondition.convertToKorean }
+            .bind(to: skyConditionLabel.rx.text)
+            .disposed(by: disposeBag)
     }
 }

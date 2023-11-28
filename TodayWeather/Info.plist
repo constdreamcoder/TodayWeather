@@ -25,5 +25,10 @@
 	<string>현재 위치사용을 허용하시겠습니까?</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>현재 위치사용을 허용하시겠습니까?</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

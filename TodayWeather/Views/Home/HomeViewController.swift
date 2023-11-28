@@ -7,16 +7,19 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 final class HomeViewController: UIViewController {
     
     private lazy var searchLocationButton: UIButton = {
-        let button = UIButton()
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 320, height: 44))
         button.setImage(UIImage(named: Assets.loctionaIcon)?.withTintColor(.white, renderingMode: .alwaysOriginal), for: .normal)
         // TODO: 사용자가 터치 시 색깔 정하기
         button.setImage(UIImage(named: Assets.loctionaIcon)?.withTintColor(.clear, renderingMode: .alwaysOriginal), for: .highlighted)
-        button.setInsets(forContentPadding: UIEdgeInsets(top: 10, left: 10, bottom: 0, right: 10), imageTitlePadding: 20)
-        button.setTitle("서울 강서구", for: .normal)
+        button.setInsets(forContentPadding: UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10), imageTitlePadding: 20)
+        button.setTitle("_", for: .normal)
+        button.contentHorizontalAlignment = .left
         button.setTitleColor(.white, for: .normal)
         // TODO: 사용자가 터치 시 색깔 정하기
         button.setTitleColor(.clear, for: .highlighted)
@@ -25,6 +28,7 @@ final class HomeViewController: UIViewController {
         return button
     }()
     
+    // TODO: - 하늘 상태에 따른 이미지 구현하기
     private lazy var skyConditionImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: Assets.sunnyWeather)
@@ -51,6 +55,8 @@ final class HomeViewController: UIViewController {
         return button
     }()
     
+    private var disposeBag = DisposeBag()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -58,13 +64,14 @@ final class HomeViewController: UIViewController {
         
         setupNavigationBar()
         setupViews()
+        updateViews()
     }
 }
 
 private extension HomeViewController {
     func setupNavigationBar() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "bell")?.withTintColor(.white, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(gotoNotifications))
-        
+                
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchLocationButton)
     }
     
@@ -92,6 +99,12 @@ private extension HomeViewController {
             $0.height.equalTo(64.0)
             $0.width.equalTo(220.0)
         }
+    }
+    
+    func updateViews() {
+        HomeViewModel.shared.currentLocationObservable
+            .bind(to: searchLocationButton.rx.title(for: .normal))
+            .disposed(by: disposeBag)
     }
 }
 

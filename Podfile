@@ -8,6 +8,9 @@ target 'TodayWeather' do
   # Pods for TodayWeather
   pod 'SnapKit'
   pod 'NMapsMap'
+  pod 'RxSwift'
+  pod 'RxCocoa'
+  pod 'Alamofire'
 
   target 'TodayWeatherTests' do
     inherit! :search_paths

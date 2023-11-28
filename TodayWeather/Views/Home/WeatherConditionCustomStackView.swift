@@ -7,6 +7,8 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 final class WeatherConditionCustomStackView: UIStackView {
 
@@ -43,6 +45,8 @@ final class WeatherConditionCustomStackView: UIStackView {
         label.textColor = .white
         return label
     }()
+    
+    private var disposeBag = DisposeBag()
     
     init(forecast: Forecast) {
         super.init(frame: .zero)
@@ -88,11 +92,17 @@ private extension WeatherConditionCustomStackView {
         case .windy:
             iconImageView.image = UIImage(named: Assets.windIcon)
             windLabel.text = "바람"
-            valueLabel.text = "10 km/h"
+            HomeViewModel.shared.currentWeatherConditionObservable
+                .map { "\($0.windSpeed) m/s" }
+                .bind(to: valueLabel.rx.text)
+                .disposed(by: disposeBag)
         case .humidity:
             iconImageView.image = UIImage(named: Assets.humidityIcon)
             windLabel.text = "습도"
-            valueLabel.text = "54 %"
+            HomeViewModel.shared.currentWeatherConditionObservable
+                .map { "\(Int($0.humidity)) %" }
+                .bind(to: valueLabel.rx.text)
+                .disposed(by: disposeBag)
         default:
             break
         }

@@ -191,7 +191,7 @@ extension SearchViewController: CLLocationManagerDelegate {
             print("위도 : \(location.coordinate.latitude)")
             print("경도 : \(location.coordinate.longitude)")
             currentLocationOfUser = NMGLatLng(lat: location.coordinate.latitude, lng: location.coordinate.longitude)
-            setupMarkerForCurrentLocation()
+            setupMarkerForCurrentLocationOfUser()
         }
     }
     
@@ -216,10 +216,11 @@ private extension SearchViewController {
     }
     
     // 현재 사용자 위치 표시
-    func setupMarkerForCurrentLocation() {
+    func setupMarkerForCurrentLocationOfUser() {
         let locationOverlay = mapView?.locationOverlay
         locationOverlay?.hidden = false
         locationOverlay?.location = currentLocationOfUser!
+        
         updateCamera(latitude: currentLocationOfUser!.lat, longitude: currentLocationOfUser!.lng)
         resetCameraUpdate()
     }
