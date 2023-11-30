@@ -12,15 +12,15 @@ class NextForecastTableViewCell: UITableViewCell {
     static let identifier = String(describing: NextForecastTableViewCell.self)
     
     private lazy var dateLabel: UILabel = {
-       let label = UILabel()
-        label.text = "9월 13일"
+        let label = UILabel()
+        label.text = Date().getTodayDate
         label.font = .systemFont(ofSize: 18.0)
         label.textColor = .white
         return label
     }()
     
     private lazy var forecastImageView: UIImageView = {
-       let imageView = UIImageView()
+        let imageView = UIImageView()
         imageView.image = UIImage(systemName: "cloud.sun.rain.fill")?.withRenderingMode(.alwaysOriginal)
         imageView.contentMode = .scaleAspectFill
         return imageView
@@ -42,6 +42,12 @@ class NextForecastTableViewCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func bind(item: NextForecastItem) {
+        guard let minTemperature = item.temperatureItem?.min, let maxTemperature = item.temperatureItem?.max else { return }
+        temperatureLabel.text = "\(minTemperature) / \(maxTemperature)°C"
+        
     }
 }
 

@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxDataSources
 
 final class DetailViewController: UIViewController {
     
@@ -27,14 +30,12 @@ final class DetailViewController: UIViewController {
     
     private lazy var todayWeatherCollectionView: TodayWeatherCollectionView = {
         let collectionView = TodayWeatherCollectionView()
-        
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        
         return collectionView
     }()
     
-    private lazy var nextForecaseHeaderView: NextForecastHeaderView = {
+    private var todayWeatherCollectionViewDataSource: RxCollectionViewSectionedReloadDataSource<TodayWeatherDataSection>!
+    
+    private lazy var nextForecastHeaderView: NextForecastHeaderView = {
         let view = NextForecastHeaderView()
         return view
     }()
@@ -42,11 +43,12 @@ final class DetailViewController: UIViewController {
     private lazy var nextForecastTableView: NextForecastTableView = {
         let tableView = NextForecastTableView()
         
-        tableView.dataSource = self
         tableView.delegate = self
         
         return tableView
     }()
+    
+    private var disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,6 +57,8 @@ final class DetailViewController: UIViewController {
         
         setupNavigationBar()
         setupSubViews()
+        
+        updateViews()
     }
 }
 
@@ -68,7 +72,7 @@ private extension DetailViewController {
     func setupSubViews() {
         [
             todayWeatherCollectionView,
-            nextForecaseHeaderView,
+            nextForecastHeaderView,
             nextForecastTableView
         ].forEach { view.addSubview($0) }
         
@@ -78,17 +82,33 @@ private extension DetailViewController {
             $0.height.equalTo(210.0)
         }
         
-        nextForecaseHeaderView.snp.makeConstraints {
+        nextForecastHeaderView.snp.makeConstraints {
             $0.top.equalTo(todayWeatherCollectionView.snp.bottom).offset(50.0)
             $0.leading.trailing.equalToSuperview().inset(30.0)
             $0.height.equalTo(40.0)
         }
         
         nextForecastTableView.snp.makeConstraints {
-            $0.top.equalTo(nextForecaseHeaderView.snp.bottom).offset(40.0)
+            $0.top.equalTo(nextForecastHeaderView.snp.bottom).offset(40.0)
             $0.leading.trailing.equalToSuperview().inset(30.0)
             $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
         }
+    }
+    
+    func updateViews() {
+        // TodayWeatherCollectionView 설정
+        todayWeatherCollectionViewDataSource = DetailViewModel.shared.configureCollectionViewDataSource()
+        DetailViewModel.shared.todayWeatherDataSectionListObservable
+            .bind(to: todayWeatherCollectionView.rx.items(dataSource: todayWeatherCollectionViewDataSource))
+            .disposed(by: disposeBag)
+        DetailViewModel.shared.bindDataToCollectionViewSection()
+        
+        // NextForecastTableView 설정
+        DetailViewModel.shared.nextForecastListRelay
+            .bind(to: nextForecastTableView.rx.items(cellIdentifier: NextForecastTableViewCell.identifier, cellType: NextForecastTableViewCell.self)) { row, element, cell in
+                cell.bind(item: element)
+            }
+            .disposed(by: disposeBag)
     }
 }
 
@@ -103,47 +123,7 @@ private extension DetailViewController {
     }
 }
 
-// MARK: - TodayWeather 관련 DataSource, Delegate
-extension DetailViewController: UICollectionViewDataSource {
-    
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: TodayWeatherDetailCollectionViewHeaderView.headerIdentifier, for: indexPath) as? TodayWeatherDetailCollectionViewHeaderView else {
-            return UICollectionReusableView()
-        }
-        return header
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TodayWeatherDetailCollectionViewCell.identifier, for: indexPath) as? TodayWeatherDetailCollectionViewCell else { return UICollectionViewCell() }
-            
-        if indexPath.row == 2 {
-            cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 0.3)
-        }
-        
-        return cell
-    }
-}
-
-extension DetailViewController: UICollectionViewDelegate {
-    
-}
-
 // MARK: - NextForecast 관련 DataSource, Delegate
-extension DetailViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: NextForecastTableViewCell.identifier, for: indexPath) as? NextForecastTableViewCell else { return UITableViewCell() }
-        return cell
-    }
-}
-
 extension DetailViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60

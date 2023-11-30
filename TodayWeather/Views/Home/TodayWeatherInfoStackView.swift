@@ -97,7 +97,7 @@ private extension TodayWeatherInfoStackView {
     
     func updateViews() {
         HomeViewModel.shared.currentWeatherConditionObservable
-            .map { $0.todayDate.getTodayDate }
+            .map { "오늘, \($0.todayDate.getTodayDate)" }
             .bind(to: dateLabel.rx.text)
             .disposed(by: disposeBag)
         

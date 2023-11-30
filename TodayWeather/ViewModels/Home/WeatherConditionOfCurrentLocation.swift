@@ -8,9 +8,9 @@
 import Foundation
 
 struct WeatherConditionOfCurrentLocation {
-    var todayDate: Date
-    var temperature: Int
-    var windSpeed: Float
-    var humidity: Int
-    var skyCondition: Items.SkyCondition
+    let todayDate: Date
+    let temperature: Int // TODO: - 나중에 바꾸기
+    let windSpeed: Float
+    let humidity: Int
+    let skyCondition: Items.SkyCondition
 }

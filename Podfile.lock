@@ -1,11 +1,16 @@
 PODS:
   - Alamofire (5.8.1)
+  - Differentiator (5.0.0)
   - NMapsGeometry (1.0.1)
   - NMapsMap (3.17.0):
     - NMapsGeometry
   - RxCocoa (6.6.0):
     - RxRelay (= 6.6.0)
     - RxSwift (= 6.6.0)
+  - RxDataSources (5.0.0):
+    - Differentiator (~> 5.0)
+    - RxCocoa (~> 6.0)
+    - RxSwift (~> 6.0)
   - RxRelay (6.6.0):
     - RxSwift (= 6.6.0)
   - RxSwift (6.6.0)
@@ -15,28 +20,33 @@ DEPENDENCIES:
   - Alamofire
   - NMapsMap
   - RxCocoa
+  - RxDataSources
   - RxSwift
   - SnapKit
 
 SPEC REPOS:
   trunk:
     - Alamofire
+    - Differentiator
     - NMapsGeometry
     - NMapsMap
     - RxCocoa
+    - RxDataSources
     - RxRelay
     - RxSwift
     - SnapKit
 
 SPEC CHECKSUMS:
   Alamofire: 3ca42e259043ee0dc5c0cdd76c4bc568b8e42af7
+  Differentiator: e8497ceab83c1b10ca233716d547b9af21b9344d
   NMapsGeometry: 53c573ead66466681cf123f99f698dc8071a4b83
   NMapsMap: a5b909a31b6f3d27a670f6eb2ddc913c38975474
   RxCocoa: 44a80de90e25b739b5aeaae3c8c371a32e3343cc
+  RxDataSources: aa47cc1ed6c500fa0dfecac5c979b723542d79cf
   RxRelay: 45eaa5db8ee4fb50e5ebd57deec0159e97fa51e6
   RxSwift: a4b44f7d24599f674deebd1818eab82e58410632
   SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
 
-PODFILE CHECKSUM: 875e197f4d5097d0cd7d8a726d7337adb0270fa1
+PODFILE CHECKSUM: fef04458b48ebc962e25b3b50b4962eabbd5f786
 
 COCOAPODS: 1.12.1

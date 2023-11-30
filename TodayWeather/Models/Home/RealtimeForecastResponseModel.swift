@@ -44,6 +44,31 @@ struct Header: Codable {
 }
 
 extension Items {
+    func getTodayWeatherForecastList() -> [TodayWeatherForecasts] {
+        var todayWeatherForecastList: [TodayWeatherForecasts] = []
+        
+        // 온도, 예보시간 추가
+        item.forEach { item in
+            if item.category == Category.T1H.rawValue {
+                var todayWeatherForecast = TodayWeatherForecasts(temperature: "", skyCondition: .sunny, time: "00:00")
+                todayWeatherForecast.temperature = item.fcstValue
+                todayWeatherForecast.time = item.fcstTime.addColonInTheMiddle
+                todayWeatherForecastList.append(todayWeatherForecast)
+            }
+        }
+        
+        // 하늘상태 추가
+        var count = 0
+        item.forEach { item in
+            if item.category == Category.SKY.rawValue {
+                todayWeatherForecastList[count].skyCondition = convertStringToSkyCondition(item)
+                count += 1
+            }
+        }
+        
+        return todayWeatherForecastList
+    }
+    
     func getCurrentWeatherConditionInfos() -> WeatherConditionOfCurrentLocation {
         // TODO: - 검색 속도 향상 시키기
         guard let currentTemperatureItem = item.first(where: { $0.category == Category.T1H.rawValue }),

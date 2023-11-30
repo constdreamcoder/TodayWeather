@@ -22,7 +22,7 @@ final class TodayWeatherDetailCollectionViewHeaderView: UICollectionReusableView
     
     private lazy var todayDateLabel: UILabel = {
         let label = UILabel()
-        label.text = "9월 12일"
+        label.text = Date().getTodayDate
         label.font = .systemFont(ofSize: 18.0)
         label.textColor = .white
         return label

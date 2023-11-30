@@ -56,12 +56,20 @@ extension HomeViewModel: CLLocationManagerDelegate {
                 
             let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: location.coordinate.latitude, lng_Y: location.coordinate.longitude)
             print(convertedXY.x, convertedXY.y)
-            RealtimeForcastService.shared.fetchRealtimeForecastsRx(nx: convertedXY.x, ny: convertedXY.y)
+            let itemObservable = RealtimeForcastService.shared.fetchRealtimeForecastsRx(nx: convertedXY.x, ny: convertedXY.y)
+            itemObservable
                 .map { items in
                     return items.getCurrentWeatherConditionInfos()
                 }
                 .take(1)
                 .bind(to: currentWeatherConditionObservable)
+            
+            itemObservable
+                .map { items in
+                    return items.getTodayWeatherForecastList()
+                }
+                .take(1)
+                .bind(to: DetailViewModel.shared.todayWeatherForecastListObservable)
         }
     }
     

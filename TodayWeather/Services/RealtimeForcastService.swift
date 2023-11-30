@@ -18,9 +18,10 @@ final class RealtimeForcastService {
         nx: Int,
         ny: Int
     ) -> Observable<Items> {
-        return Observable.create { emitter in
+        return Observable.create { [weak self]emitter in
+            guard let weakSelf = self else { return Disposables.create() }
             let baseDateAndTime = Date().getBaseDateAndTimeForRealtimeForecast
-            self.fetchRealtimeForecasts(
+            weakSelf.fetchRealtimeForecasts(
                 base_date: baseDateAndTime.baseDate,
                 base_time: baseDateAndTime.baseTime,
                 nx: nx,

@@ -10,6 +10,7 @@ target 'TodayWeather' do
   pod 'NMapsMap'
   pod 'RxSwift'
   pod 'RxCocoa'
+  pod 'RxDataSources' 
   pod 'Alamofire'
 
   target 'TodayWeatherTests' do

@@ -7,6 +7,8 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 class TodayWeatherDetailCollectionViewCell: UICollectionViewCell {
     static let identifier = String(describing: TodayWeatherDetailCollectionViewCell.self)
@@ -42,6 +44,8 @@ class TodayWeatherDetailCollectionViewCell: UICollectionViewCell {
         return stackView
     }()
     
+    private var disposeBag = DisposeBag()
+    
     override init(frame: CGRect) {
         super.init(frame: .zero)
      
@@ -50,6 +54,12 @@ class TodayWeatherDetailCollectionViewCell: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func bind(item: TodayWeatherDataSection.Item) {
+        temperatureLabel.text = item.temperature + "°C"
+        // TODO: - 하늘 상태에 따른 skyConditionImageView 이미지 변경하기
+        timeLabel.text = item.time
     }
 }
 
@@ -72,6 +82,5 @@ private extension TodayWeatherDetailCollectionViewCell {
         todayWeatherInfoStackView.snp.makeConstraints {
             $0.edges.equalToSuperview().inset(13.0)
         }
-        
     }
 }

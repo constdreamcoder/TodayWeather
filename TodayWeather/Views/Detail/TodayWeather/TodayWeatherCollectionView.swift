@@ -18,6 +18,8 @@ final class TodayWeatherCollectionView: UICollectionView {
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets.leading = 12.0
         
+        section.orthogonalScrollingBehavior = .continuous
+        
         section.boundarySupplementaryItems = [
             .init(layoutSize: .init(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(50)), elementKind: TodayWeatherDetailCollectionViewHeaderView.headerViewOfKind, alignment: .topLeading)
         ]
