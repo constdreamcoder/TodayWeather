@@ -98,7 +98,7 @@ private extension DetailViewController {
     func updateViews() {
         // TodayWeatherCollectionView 설정
         todayWeatherCollectionViewDataSource = DetailViewModel.shared.configureCollectionViewDataSource()
-        DetailViewModel.shared.todayWeatherDataSectionListObservable
+        DetailViewModel.shared.todayWeatherDataSectionListRelay
             .bind(to: todayWeatherCollectionView.rx.items(dataSource: todayWeatherCollectionViewDataSource))
             .disposed(by: disposeBag)
         DetailViewModel.shared.bindDataToCollectionViewSection()
@@ -120,6 +120,7 @@ private extension DetailViewController {
     
     @objc func goBack() {
         dismiss(animated: true, completion: nil)
+        navigationController?.popViewController(animated: true)
     }
 }
 

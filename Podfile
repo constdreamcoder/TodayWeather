@@ -12,6 +12,8 @@ target 'TodayWeather' do
   pod 'RxCocoa'
   pod 'RxDataSources' 
   pod 'Alamofire'
+  pod "RxRealm"
+  pod 'RealmSwift'
 
   target 'TodayWeatherTests' do
     inherit! :search_paths

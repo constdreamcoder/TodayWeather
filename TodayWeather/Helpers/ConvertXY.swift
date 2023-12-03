@@ -18,6 +18,18 @@ final class ConvertXY {
         
         var x: Int
         var y: Int
+        
+        init(
+            lat: Double = 0.0,
+            lng: Double = 0.0,
+            x: Int = 0,
+            y: Int = 0
+        ) {
+            self.lat = lat
+            self.lng = lng
+            self.x = x
+            self.y = y
+        }
     }
     
     //

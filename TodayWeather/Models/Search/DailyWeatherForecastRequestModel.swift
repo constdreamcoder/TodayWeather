@@ -1,13 +1,13 @@
 //
-//  RealtimeForecastRequestModel.swift
+//  DailyWeatherForecastRequestModel.swift
 //  TodayWeather
 //
-//  Created by SUCHAN CHANG on 2023/11/27.
+//  Created by SUCHAN CHANG on 2023/12/03.
 //
 
 import Foundation
 
-struct RealtimeForecastRequestModel: Codable {
+struct DailyWeatherForecastRequestModel: Codable {
     var pageNo: Int
     var numOfRows: Int
     var dataType: String = "JSON"
@@ -18,12 +18,12 @@ struct RealtimeForecastRequestModel: Codable {
     
     init(
         pageNo: Int = 1,
-        numOfRows: Int = 60,
+        numOfRows: Int = 1000,
         dataType: String = "JSON",
-        base_date: String = "20231127",
-        base_time: String = "2230",
-        nx: Int = 60,
-        ny: Int = 127
+        base_date: String = "20231203",
+        base_time: String = "0500",
+        nx: Int = 57,
+        ny: Int = 126
     ) {
         self.pageNo = pageNo
         self.numOfRows = numOfRows
@@ -34,4 +34,3 @@ struct RealtimeForecastRequestModel: Codable {
         self.ny = ny
     }
 }
-

@@ -8,22 +8,25 @@
 import UIKit
 import SnapKit
 import NMapsMap
-import CoreLocation
+import RxSwift
+import RxCocoa
+import RxDataSources
+//import CoreLocation
 
 final class SearchViewController: UIViewController {
     
     // TODO: - 추후 ViewModel로 이동시키기
     var mapView: NMFMapView?
-    var locationManager = CLLocationManager()
-    var marker: NMFMarker?
+    var locationManager: CLLocationManager = HomeViewModel.shared.locationManager
+    var marker = NMFMarker()
     var currentLocationOfUser: NMGLatLng?
     var searchedLocation: NMGLatLng?
     var cameraUpdate: NMFCameraUpdate?
+    var infoWindow: NMFInfoWindow?
     
     private lazy var searchTableView: UITableView = {
         let tableView = UITableView()
         
-        tableView.dataSource = self
         tableView.delegate = self
         
         tableView.register(SearchTableViewCell.self, forCellReuseIdentifier: SearchTableViewCell.identifier)
@@ -35,11 +38,12 @@ final class SearchViewController: UIViewController {
         
         return tableView
     }()
-
+    
     private lazy var searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.sizeToFit()
         searchBar.delegate = self
+        searchBar.returnKeyType = .done
         searchBar.placeholder = "지역명을 입력해보세요"
         searchBar.tintColor = .black
         searchBar.setImage(UIImage(), for: UISearchBar.Icon.search, state: .normal)
@@ -64,12 +68,24 @@ final class SearchViewController: UIViewController {
         return button
     }()
     
+    private var searchTableViewDataSource: RxTableViewSectionedReloadDataSource<SearchDataSection>!
+    
+    private var disposeBag = DisposeBag()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         configure()
         setLocationManager()
+        updateViews()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        SearchViewModel.shared.isSearchMode = false
+    }
+    
 }
 
 // MARK: - UI 관련
@@ -84,7 +100,7 @@ private extension SearchViewController {
         ].forEach { view.addSubview($0) }
         
         view.backgroundColor = .white
-
+        
         setupNavigationBar()
         
         bottomSupplimentaryView.layer.cornerRadius = 30
@@ -107,6 +123,14 @@ private extension SearchViewController {
             $0.width.height.equalTo(48.0)
             $0.trailing.bottom.equalToSuperview().inset(36.0)
         }
+        
+        SearchViewModel.shared.userLocationRelay
+            .subscribe { [weak self] userLocation in
+                guard let weakSelf = self else { return }
+                weakSelf.currentLocationOfUser = NMGLatLng(lat: userLocation[0], lng: userLocation[1])
+                weakSelf.setupMarkerForCurrentLocationOfUser()
+            }
+            .disposed(by: disposeBag)
     }
     
     func setupNavigationBar() {
@@ -119,6 +143,13 @@ private extension SearchViewController {
     func showTableView(isHidden: Bool) {
         searchTableView.isHidden = isHidden
         bottomSupplimentaryView.isHidden = isHidden
+    }
+    
+    func updateViews() {
+        searchTableViewDataSource = SearchViewModel.shared.configureTableViewDataSource()
+        SearchViewModel.shared.searchDataSectionListRelay
+            .bind(to: searchTableView.rx.items(dataSource: searchTableViewDataSource))
+            .disposed(by: disposeBag)
     }
 }
 
@@ -139,25 +170,26 @@ private extension SearchViewController {
 }
 
 // MARK: TableView 관련 메소드
-extension SearchViewController: UITableViewDataSource {
-    
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "최근 검색"
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: SearchTableViewCell.identifier, for: indexPath) as? SearchTableViewCell else { return UITableViewCell()}
-        return cell
-    }
-}
-
 extension SearchViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60
+    }
+    
+    // TODO: - SearchViewModel로 옮기기
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedAddress = SearchViewModel.shared.searchDataSectionListRelay.value[0].items[indexPath.row].address
+        guard let longitude = Double(selectedAddress.x),
+              let latitude = Double(selectedAddress.y)
+        else { return }
+         
+        SearchViewModel.shared.getWeatherForecastInfosOfSelectedRegion(latitude: latitude, longitude: longitude)
+    
+        showInfoWindowOnMarker(latitude: latitude, longitude: longitude, address: selectedAddress.roadAddress)
+
+        showTableView(isHidden: true)
+        RecentlySearchedAddressService.shared.addNewlySearchedAddress(newAddress: selectedAddress)
+        
+        searchBar.resignFirstResponder()
     }
 }
 
@@ -165,45 +197,39 @@ extension SearchViewController: UITableViewDelegate {
 extension SearchViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         showTableView(isHidden: false)
+        if searchBar.text != "" {
+            SearchViewModel.shared.searchAddressList()
+        } else if searchBar.text == "" {
+            SearchViewModel.shared.getRecentlySearchedResultList()
+        }
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        SearchViewModel.shared.searchText = searchText
+        SearchViewModel.shared.isSearchMode = false
+        if searchText == "" {
+            SearchViewModel.shared.getRecentlySearchedResultList()
+        }
+    }
+    
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        print("끝남")
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        if searchBar.text != "" {
+            print("클릭")
+            SearchViewModel.shared.isSearchMode = true
+            SearchViewModel.shared.searchAddressList()
+            searchBar.resignFirstResponder()
+        }
     }
 }
 
 // MARK: - 사용자 위치 관련 메소드
-extension SearchViewController: CLLocationManagerDelegate {
+extension SearchViewController {
     func setLocationManager() {
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
-        DispatchQueue.global().async { [weak self] in
-            guard let weakSelf = self else { return }
-            let locationServiceEnabled = CLLocationManager.locationServicesEnabled()
-            if locationServiceEnabled {
-                weakSelf.locationManager.startUpdatingLocation()
-            } else {
-                print("위치 서비스 허용 off")
-            }
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.first {
-            print("위치 업데이트")
-            print("위도 : \(location.coordinate.latitude)")
-            print("경도 : \(location.coordinate.longitude)")
-            currentLocationOfUser = NMGLatLng(lat: location.coordinate.latitude, lng: location.coordinate.longitude)
-            setupMarkerForCurrentLocationOfUser()
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("error: \(error)")
-    }
-    
-    // 사용자 위치 접근 상태 확인 메소드
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse && manager.authorizationStatus == .authorizedAlways {
-            
-        }
+        locationManager.delegate = HomeViewModel.shared
     }
 }
 
@@ -220,7 +246,7 @@ private extension SearchViewController {
         let locationOverlay = mapView?.locationOverlay
         locationOverlay?.hidden = false
         locationOverlay?.location = currentLocationOfUser!
-        
+                
         updateCamera(latitude: currentLocationOfUser!.lat, longitude: currentLocationOfUser!.lng)
         resetCameraUpdate()
     }
@@ -228,6 +254,7 @@ private extension SearchViewController {
     // 카메라 위치 업데이트
     func updateCamera(latitude: Double, longitude: Double) {
         cameraUpdate = NMFCameraUpdate(scrollTo: NMGLatLng(lat: latitude, lng: longitude))
+        cameraUpdate?.animationDuration = 0.35
         cameraUpdate?.animation = .easeIn
         mapView?.moveCamera(cameraUpdate!)
     }
@@ -239,9 +266,60 @@ private extension SearchViewController {
     }
     
     // 지역 결과 지도에 표시
-    func setupMarkerOnMap() {
-        marker = NMFMarker()
-        marker?.position = currentLocationOfUser!
-        marker?.mapView = mapView
+    func setupMarkerOnMap(latitude: Double, longitude: Double) {
+        marker.position = NMGLatLng(lat: latitude, lng: longitude)
+        marker.mapView = mapView
+    }
+    
+    // 정보창 표시
+    func showInfoWindowOnMarker(latitude: Double, longitude: Double, address: String) {
+
+        resetInfoView()
+        
+        infoWindow = NMFInfoWindow()
+        
+        // 터치 이벤트 추가
+        let handler = { [weak self,latitude, longitude] (overlay: NMFOverlay) -> Bool in
+            guard let weakSelf = self else { return false }
+            if let infoWindow = overlay as? NMFInfoWindow {
+                print("터치됨")
+                let detailVC = DetailViewController()
+                weakSelf.navigationController?.pushViewController(detailVC, animated: true)
+            }
+            return true
+        }
+        infoWindow?.touchHandler = handler
+        
+        let dataSource = NMFInfoWindowDefaultTextSource.data()
+
+        // TODO: - 성능 개선하기
+        SearchViewModel.shared.infoWindowContentsRelay
+            .take(1)
+            .subscribe(onNext: { [weak self, dataSource] title in
+                guard let weakSelf = self else { return }
+                
+                // 오늘 예보 및 내일 예보 데이터 호출
+                DetailViewModel.shared.resetTodayWeatherForecastList(latitude: latitude, longitude: longitude)
+                DetailViewModel.shared.setupNextForecastList(regIdForTemp: "21F20801", regIdForSky: "11D20000")
+                
+                // 마커 표시를 위한 설정
+                weakSelf.setupMarkerOnMap(latitude: latitude, longitude: longitude)
+                dataSource.title = title
+                weakSelf.infoWindow?.dataSource = dataSource
+                weakSelf.infoWindow?.open(with: weakSelf.marker)
+            }, onCompleted: { [weak self, latitude, longitude, address] in
+                guard let weakSelf = self else { return }
+                weakSelf.searchBar.text = address
+                SearchViewModel.shared.searchText = address
+                weakSelf.updateCamera(latitude: latitude, longitude: longitude)
+                weakSelf.resetCameraUpdate()
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    // 정보창 초기화
+    func resetInfoView() {
+        infoWindow?.close()
+        infoWindow = nil
     }
 }

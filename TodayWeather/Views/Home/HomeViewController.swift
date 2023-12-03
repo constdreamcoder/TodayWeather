@@ -102,7 +102,7 @@ private extension HomeViewController {
     }
     
     func updateViews() {
-        HomeViewModel.shared.currentLocationObservable
+        HomeViewModel.shared.currentLocationRelay
             .bind(to: searchLocationButton.rx.title(for: .normal))
             .disposed(by: disposeBag)
     }
@@ -127,6 +127,14 @@ private extension HomeViewController {
     }
     
     @objc func gotoDetailForecast() {
+        let homeViewModel = HomeViewModel.shared
+        let latitude = homeViewModel.userLocation.lat
+        let longitude = homeViewModel.userLocation.lng
+        DetailViewModel.shared.resetTodayWeatherForecastList(
+            latitude: latitude,
+            longitude: longitude
+        )
+        DetailViewModel.shared.setupNextForecastList(regIdForTemp: "11B10101", regIdForSky: "11B00000")
         let detailVC = UINavigationController(rootViewController: DetailViewController())
         detailVC.modalPresentationStyle = .overFullScreen
         present(detailVC, animated: true, completion: nil)

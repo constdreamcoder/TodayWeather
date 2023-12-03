@@ -13,18 +13,29 @@ import CoreLocation
 final class HomeViewModel: NSObject {
     
     static let shared = HomeViewModel()
-    private var locationManager = CLLocationManager()
+    var locationManager = CLLocationManager()
     
     var currentWeatherConditionObservable = PublishRelay<WeatherConditionOfCurrentLocation>()
-    var currentLocationObservable = PublishRelay<String>()
-        
+    var currentLocationRelay = PublishRelay<String>()
+    
+    var userLocation = ConvertXY.LatXLngY()
+            
     private override init() {
         super.init()
         
         setLocationManager()
     }
+    
+    func getWeatherConditionOfCurrentLocationObservable(nx: Int, ny: Int) -> Observable<WeatherConditionOfCurrentLocation> {
+        return RealtimeForcastService.shared.fetchRealtimeForecastsRx(nx: nx, ny: ny)
+            .map { items in
+                DetailViewModel.shared.todayWeatherForecastListSubject.onNext(items.getTodayWeatherForecastList())
+                return items.getCurrentWeatherConditionInfos()
+            }
+    }
 }
 
+// MARK: - 사용자 위치 관련 메소드
 extension HomeViewModel: CLLocationManagerDelegate {
     func setLocationManager() {
         locationManager.delegate = self
@@ -46,30 +57,31 @@ extension HomeViewModel: CLLocationManagerDelegate {
             print("위치 업데이트")
             print("위도 : \(location.coordinate.latitude)")
             print("경도 : \(location.coordinate.longitude)")
- 
-            KoreanAddressService.shared.convertLatAndLngToKoreanAddressRx(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+
+            let latitude = location.coordinate.latitude
+            let longitude = location.coordinate.longitude
+            
+            KoreanAddressService.shared.convertLatAndLngToKoreanAddressRx(latitude: latitude, longitude: longitude)
                 .map { region in
                     return region.getAddress()
                 }
                 .take(1)
-                .bind(to: currentLocationObservable)
+                .bind(to: currentLocationRelay)
                 
-            let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: location.coordinate.latitude, lng_Y: location.coordinate.longitude)
-            print(convertedXY.x, convertedXY.y)
-            let itemObservable = RealtimeForcastService.shared.fetchRealtimeForecastsRx(nx: convertedXY.x, ny: convertedXY.y)
-            itemObservable
-                .map { items in
-                    return items.getCurrentWeatherConditionInfos()
-                }
+            userLocation = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
+            print(userLocation.x, userLocation.y)
+            let baseDateAndTime = Date().getBaseDateAndTimeForRealtimeForecast
+            
+            getWeatherConditionOfCurrentLocationObservable(nx: userLocation.x, ny: userLocation.y)
                 .take(1)
                 .bind(to: currentWeatherConditionObservable)
             
-            itemObservable
-                .map { items in
-                    return items.getTodayWeatherForecastList()
-                }
+            // Search로 전달
+            Observable.just([latitude, longitude], scheduler: ConcurrentDispatchQueueScheduler(qos: .default))
                 .take(1)
-                .bind(to: DetailViewModel.shared.todayWeatherForecastListObservable)
+                .subscribe { userLocation in
+                    SearchViewModel.shared.userLocationSubject.onNext(userLocation)
+                }
         }
     }
     

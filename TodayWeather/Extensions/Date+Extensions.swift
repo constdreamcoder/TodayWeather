@@ -16,6 +16,14 @@ extension Date {
         return (String(tmp[0]), String(tmp[1]))
     }
     
+    var getBaseDateAndTimeForDailyWeatherForecast: (baseDate: String, baseTime: String) {
+        let dateForematter = DateFormatter()
+        dateForematter.dateFormat = "yyyyMMdd 0500"
+        dateForematter.locale = Locale(identifier: "ko_kr")
+        let tmp = dateForematter.string(from: self).split(separator: " ")
+        return (String(tmp[0]), String(tmp[1]))
+    }
+    
     var getTodayDate: String {
         let dateForematter = DateFormatter()
         dateForematter.dateFormat = "M월 d일"

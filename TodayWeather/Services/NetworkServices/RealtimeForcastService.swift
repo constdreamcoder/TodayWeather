@@ -18,7 +18,7 @@ final class RealtimeForcastService {
         nx: Int,
         ny: Int
     ) -> Observable<Items> {
-        return Observable.create { [weak self]emitter in
+        return Observable.create { [weak self] emitter in
             guard let weakSelf = self else { return Disposables.create() }
             let baseDateAndTime = Date().getBaseDateAndTimeForRealtimeForecast
             weakSelf.fetchRealtimeForecasts(
@@ -61,13 +61,14 @@ private extension RealtimeForcastService {
             "Content-Type": "application/json"
         ]
         
-        AF.request(url, method: .get, parameters: parameters, headers: headers).responseDecodable(of: RealtimeForecastResponseModel.self) { response in
-            switch response.result {
-            case .success(let response):
-                completionHandler(.success(response.response.body.items))
-            case .failure(let error):
-                completionHandler(.failure(error))
+        AF.request(url, method: .get, parameters: parameters, headers: headers)
+            .responseDecodable(of: RealtimeForecastResponseModel.self) { response in
+                switch response.result {
+                case .success(let response):
+                    completionHandler(.success(response.response.body.items))
+                case .failure(let error):
+                    completionHandler(.failure(error))
+                }
             }
-        }
     }
 }

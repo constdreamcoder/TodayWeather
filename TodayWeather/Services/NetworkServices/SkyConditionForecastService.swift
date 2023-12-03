@@ -36,10 +36,9 @@ final class SkyConditionForecastService {
             return Disposables.create()
         }
     }
-    
 }
 
-extension SkyConditionForecastService {
+private extension SkyConditionForecastService {
     func fetchSkyConditionForcasts(
         regId: String,
         tmFc: String,
