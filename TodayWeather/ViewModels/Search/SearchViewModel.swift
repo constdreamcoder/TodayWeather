@@ -116,11 +116,17 @@ final class SearchViewModel {
         print(convertedXY.x, convertedXY.y)
         
         Observable.combineLatest(
-            DailyWeatherForecastService.shared.fetchDailyWeatherForecastInfosRx(nx: convertedXY.x, ny: convertedXY.y),
-            RealtimeForcastService.shared.fetchRealtimeForecastsRx(nx: convertedXY.x, ny: convertedXY.y)
+            DailyWeatherForecastService.shared.fetchDailyWeatherForecastInfosRx(
+                nx: convertedXY.x,
+                ny: convertedXY.y,
+                base_time: Date().getDateOfSelectedRegion.getBaseDateAndTimeForDailyWeatherForecast.baseTime
+            ), RealtimeForcastService.shared.fetchRealtimeForecastsRx(
+                nx: convertedXY.x,
+                ny: convertedXY.y
+            )
         ) { dwfItems, items -> InfoWindowContents in
-            let lowAndHighTempForToday = dwfItems.getHighAndLowTemperatureForToday(today: Date().getBaseDateAndTimeForDailyWeatherForecast.baseDate)
-            let currentWeatherCondition =  items.getCurrentWeatherConditionInfos()
+            let lowAndHighTempForToday = dwfItems.getHighAndLowTemperatureForToday(baseDate: Date().getBaseDateAndTimeForDailyWeatherForecast.baseDate)
+            let currentWeatherCondition = items.getCurrentWeatherConditionInfos()
             return InfoWindowContents(
                 highestTemperature: lowAndHighTempForToday.highestTemp,
                 lowestTemperature: lowAndHighTempForToday.lowestTemp,

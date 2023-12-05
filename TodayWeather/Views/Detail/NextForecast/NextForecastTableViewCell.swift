@@ -13,7 +13,7 @@ class NextForecastTableViewCell: UITableViewCell {
     
     private lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.text = Date().getTodayDate
+        label.text = ""
         label.font = .systemFont(ofSize: 18.0)
         label.textColor = .white
         return label
@@ -45,7 +45,11 @@ class NextForecastTableViewCell: UITableViewCell {
     }
     
     func bind(item: NextForecastItem) {
-        guard let minTemperature = item.temperatureItem?.min, let maxTemperature = item.temperatureItem?.max else { return }
+        guard let date = item.date,
+              let minTemperature = item.temperatureItem?.min,
+              let maxTemperature = item.temperatureItem?.max
+        else { return }
+        dateLabel.text = date.getTodayDate
         temperatureLabel.text = "\(minTemperature) / \(maxTemperature)°C"
         
     }

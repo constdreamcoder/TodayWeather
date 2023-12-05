@@ -14,4 +14,12 @@ extension String {
         baseTimeString.insert(":", at: index)
         return baseTimeString
     }
+    
+    var splitTwoPrefixAndConvertIntoInt: Int {
+        return Int(String(self.prefix(2)))!
+    }
+    
+    var converToInt: Int {
+        return Int(self) ?? 0
+    }
 }

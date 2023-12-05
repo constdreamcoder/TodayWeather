@@ -66,6 +66,19 @@ final class HomeViewController: UIViewController {
         setupViews()
         updateViews()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        let homeViewModel = HomeViewModel.shared
+        let latitude = homeViewModel.userLocation.lat
+        let longitude = homeViewModel.userLocation.lng
+        DetailViewModel.shared.reSetupTodayWeatherForecastList(
+            latitude: latitude,
+            longitude: longitude
+        )
+        DetailViewModel.shared.updateNextForecastListWithUserLocation()
+    }
 }
 
 private extension HomeViewController {
@@ -127,14 +140,6 @@ private extension HomeViewController {
     }
     
     @objc func gotoDetailForecast() {
-        let homeViewModel = HomeViewModel.shared
-        let latitude = homeViewModel.userLocation.lat
-        let longitude = homeViewModel.userLocation.lng
-        DetailViewModel.shared.resetTodayWeatherForecastList(
-            latitude: latitude,
-            longitude: longitude
-        )
-        DetailViewModel.shared.setupNextForecastList(regIdForTemp: "11B10101", regIdForSky: "11B00000")
         let detailVC = UINavigationController(rootViewController: DetailViewController())
         detailVC.modalPresentationStyle = .overFullScreen
         present(detailVC, animated: true, completion: nil)

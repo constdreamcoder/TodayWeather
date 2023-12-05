@@ -86,6 +86,12 @@ final class SearchViewController: UIViewController {
         SearchViewModel.shared.isSearchMode = false
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        
+        navigationItem.titleView?.becomeFirstResponder()
+    }
+    
 }
 
 // MARK: - UI 관련
@@ -141,6 +147,7 @@ private extension SearchViewController {
     }
     
     func showTableView(isHidden: Bool) {
+        print("isHidden: \(isHidden)")
         searchTableView.isHidden = isHidden
         bottomSupplimentaryView.isHidden = isHidden
     }
@@ -181,11 +188,11 @@ extension SearchViewController: UITableViewDelegate {
         guard let longitude = Double(selectedAddress.x),
               let latitude = Double(selectedAddress.y)
         else { return }
-         
+        
         SearchViewModel.shared.getWeatherForecastInfosOfSelectedRegion(latitude: latitude, longitude: longitude)
-    
+        
         showInfoWindowOnMarker(latitude: latitude, longitude: longitude, address: selectedAddress.roadAddress)
-
+        
         showTableView(isHidden: true)
         RecentlySearchedAddressService.shared.addNewlySearchedAddress(newAddress: selectedAddress)
         
@@ -198,8 +205,10 @@ extension SearchViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         showTableView(isHidden: false)
         if searchBar.text != "" {
+            SearchViewModel.shared.isSearchMode = true
             SearchViewModel.shared.searchAddressList()
         } else if searchBar.text == "" {
+            SearchViewModel.shared.isSearchMode = false
             SearchViewModel.shared.getRecentlySearchedResultList()
         }
     }
@@ -246,7 +255,7 @@ private extension SearchViewController {
         let locationOverlay = mapView?.locationOverlay
         locationOverlay?.hidden = false
         locationOverlay?.location = currentLocationOfUser!
-                
+        
         updateCamera(latitude: currentLocationOfUser!.lat, longitude: currentLocationOfUser!.lng)
         resetCameraUpdate()
     }
@@ -273,7 +282,7 @@ private extension SearchViewController {
     
     // 정보창 표시
     func showInfoWindowOnMarker(latitude: Double, longitude: Double, address: String) {
-
+        
         resetInfoView()
         
         infoWindow = NMFInfoWindow()
@@ -291,7 +300,7 @@ private extension SearchViewController {
         infoWindow?.touchHandler = handler
         
         let dataSource = NMFInfoWindowDefaultTextSource.data()
-
+        
         // TODO: - 성능 개선하기
         SearchViewModel.shared.infoWindowContentsRelay
             .take(1)
@@ -299,8 +308,8 @@ private extension SearchViewController {
                 guard let weakSelf = self else { return }
                 
                 // 오늘 예보 및 내일 예보 데이터 호출
-                DetailViewModel.shared.resetTodayWeatherForecastList(latitude: latitude, longitude: longitude)
-                DetailViewModel.shared.setupNextForecastList(regIdForTemp: "21F20801", regIdForSky: "11D20000")
+                DetailViewModel.shared.reSetupTodayWeatherForecastList(latitude: latitude, longitude: longitude)
+                DetailViewModel.shared.setupNextForecastList(regIdForTemp: "21F20801", regIdForSky: "11D20000", latitude: latitude, longitude: longitude)
                 
                 // 마커 표시를 위한 설정
                 weakSelf.setupMarkerOnMap(latitude: latitude, longitude: longitude)

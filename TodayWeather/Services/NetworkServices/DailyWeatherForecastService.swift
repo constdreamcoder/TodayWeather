@@ -16,14 +16,15 @@ final class DailyWeatherForecastService {
     
     func fetchDailyWeatherForecastInfosRx(
         nx: Int,
-        ny: Int
+        ny: Int,
+        base_time: String
     ) -> Observable<DWFItems> {
         return Observable.create { [weak self] emitter in
             guard let weakSelf = self else { return Disposables.create() }
             let baseDateAndTime = Date().getBaseDateAndTimeForDailyWeatherForecast
             weakSelf.fetchDailyWeatherForecastInfos(
                 base_date: baseDateAndTime.baseDate,
-                base_time: baseDateAndTime.baseTime,
+                base_time: base_time,
                 nx: nx,
                 ny: ny
             ) { result in
@@ -40,7 +41,7 @@ final class DailyWeatherForecastService {
     }
 }
 
-extension DailyWeatherForecastService {
+private extension DailyWeatherForecastService {
     func fetchDailyWeatherForecastInfos(
         base_date: String,
         base_time: String,

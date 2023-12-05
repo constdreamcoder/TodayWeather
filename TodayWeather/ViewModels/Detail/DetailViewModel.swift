@@ -11,6 +11,7 @@ import RxRelay
 import RxDataSources
 
 struct NextForecastItem {
+    var date: Date?
     var temperatureItem: NextForecastTemperatureItem?
     var skyConditionItem: NextForecastSkyConditionItem?
 }
@@ -32,46 +33,124 @@ final class DetailViewModel {
 
 // MARK: - 오늘 예보 관련 메소드
 extension DetailViewModel {
-    func resetTodayWeatherForecastList(latitude: Double, longitude: Double) {
+    func reSetupTodayWeatherForecastList(latitude: Double, longitude: Double) {
         print(latitude, longitude)
         let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
         print(convertedXY.x, convertedXY.y)
         HomeViewModel.shared.getWeatherConditionOfCurrentLocationObservable(nx: convertedXY.x, ny: convertedXY.y)
             .take(1)
-            .subscribe { _ in
-                self.bindDataToCollectionViewSection()
+            .subscribe { [weak self] _ in
+                guard let weakSelf = self else { return }
+                weakSelf.bindDataToCollectionViewSection()
             }
     }
 }
 
 // 다음 예보 관련 메소드
 extension DetailViewModel {
-    func setupNextForecastList(regIdForTemp: String, regIdForSky: String) {
-        print(regIdForTemp)
+    
+    func updateNextForecastListWithUserLocation() {
+        let searchVM = SearchViewModel.shared
+        
+        if searchVM.userLocationRelay.value.count == 0 {
+            searchVM.userLocationSubject
+                .take(1)
+                .subscribe { [weak self] userLocation in
+                    guard let weakSelf = self else { return }
+                    print("lat: \(userLocation[0]), lng: \(userLocation[1])")
+                    weakSelf.setupNextForecastList(
+                        regIdForTemp: "11B10101",
+                        regIdForSky: "11B00000",
+                        latitude: userLocation[0],
+                        longitude: userLocation[1]
+                    )
+                }
+        } else {
+            setupNextForecastList(
+                regIdForTemp: "11B10101",
+                regIdForSky: "11B00000",
+                latitude: searchVM.userLocationRelay.value[0],
+                longitude: searchVM.userLocationRelay.value[1]
+            )
+        }
+        
+    }
+    
+    // TODO: - 아래 메소드 사용 위치별 latitude, longitude 사용 여부 처리하기
+    func setupNextForecastList(regIdForTemp: String, regIdForSky: String, latitude: Double = 0.0, longitude: Double = 0.0) {
+        
+        guard latitude > 0.0 && longitude > 0.0 else { return }
+        let now = Date()
+
+        let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
+                
         Observable.combineLatest(
-            TemperatureForecastService.shared.fetchTemperatureForcastsRx(
+            DailyWeatherForecastService.shared.fetchDailyWeatherForecastInfosRx(
+                nx: convertedXY.x,
+                ny: convertedXY.y,
+                base_time: now.getDateOfSelectedRegion.getBaseDateAndTimeForDailyWeatherForecast.baseTime
+            ), DailyWeatherForecastService.shared.fetchDailyWeatherForecastInfosRx(
+                nx: convertedXY.x,
+                ny: convertedXY.y,
+                base_time: now.convertBaseTime.getBaseDateAndTimeForDailyWeatherForecast.baseTime
+            ), TemperatureForecastService.shared.fetchTemperatureForcastsRx(
                 regId: regIdForTemp, // TODO: - 예보구역코드 구현하기
-                tmFc: Date().getTimeForecast
+                tmFc: now.getTimeForecast
             ), SkyConditionForecastService.shared.fetchSkyConditionForcastsRx(
                 regId: regIdForSky, // TODO: - 예보구역코드 구현하기
-                tmFc: Date().getTimeForecast
-            )) { tfItem, scItem -> [NextForecastItem] in
-                
+                tmFc: now.getTimeForecast
+            )) { [weak self, now] dwfItems1, dwfItems2, tfItem, scItem -> [NextForecastItem] in
+                guard let weakSelf = self else { return [] }
                 let temperatureList = tfItem.getNextForecastTemperatureList()
                 let skyConditionList = scItem.getNextForecastSkyCondtionList()
+                let (nextForecastTemperatureListForThreeDaysFromToday, nextForecastSkyConditionListForThreeDaysFromToday) = weakSelf.getThreeDaysWeatherForcastListFromToday(now: now, dwfItems1: dwfItems1, dwfItems2: dwfItems2)
                 
                 var nextForecastList: [NextForecastItem] = []
-                
-                for index in 0..<min(temperatureList.count, skyConditionList.count) {
+                let count = min(temperatureList.count, skyConditionList.count) + 3
+                for index in 0..<count {
                     var nextForecastItem = NextForecastItem()
-                    nextForecastItem.temperatureItem = temperatureList[index]
-                    nextForecastItem.skyConditionItem = skyConditionList[index]
+                    nextForecastItem.date = now.addingTimeInterval(Double(86400 * index))
+
+                    if index < 3 {
+                        nextForecastItem.temperatureItem = nextForecastTemperatureListForThreeDaysFromToday[index]
+                        nextForecastItem.skyConditionItem = nextForecastSkyConditionListForThreeDaysFromToday[index]
+                    } else {
+                        nextForecastItem.temperatureItem = temperatureList[index - 3]
+                        nextForecastItem.skyConditionItem = skyConditionList[index - 3]
+                    }
+                    
                     nextForecastList.append(nextForecastItem)
                 }
+                print("ss")
                 return nextForecastList
             }
             .take(1)
             .bind(to: nextForecastListRelay)
+    }
+    
+    private func getThreeDaysWeatherForcastListFromToday(now: Date, dwfItems1: DWFItems, dwfItems2: DWFItems) -> (
+        nextForecastTemperatureListForThreeDaysFromToday: [NextForecastTemperatureItem],
+        nextForecastSkyConditionListForThreeDaysFromToday: [NextForecastSkyConditionItem]
+    ) {
+        let lowAndHighTempForToday = dwfItems1.getHighAndLowTemperatureForToday(baseDate: now.getBaseDateAndTimeForDailyWeatherForecast.baseDate)
+       var (nextForecastTemperatureListForThreeDaysFromToday, nextForecastSkyConditionListForThreeDaysFromToday) = dwfItems2.getTwoDaysWeatherForcastListSinceToday(now: now)
+       
+       nextForecastTemperatureListForThreeDaysFromToday.insert(
+           NextForecastTemperatureItem(
+               min: Int(lowAndHighTempForToday.lowestTemp),
+               max: Int(Double(lowAndHighTempForToday.highestTemp) ?? 0.0)
+           ),
+           at: 0
+       )
+       
+       nextForecastSkyConditionListForThreeDaysFromToday.insert(NextForecastSkyConditionItem(
+               skyConditionAM: lowAndHighTempForToday.skyConditionAM,
+               skyConditionPM: lowAndHighTempForToday.skyConditionPM
+           ),
+           at: 0
+       )
+        
+        return (nextForecastTemperatureListForThreeDaysFromToday, nextForecastSkyConditionListForThreeDaysFromToday)
     }
 }
 
