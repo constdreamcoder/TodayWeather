@@ -55,6 +55,7 @@
 		00BB701A2B19611900DEE301 /* GeolocationRequestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00BB70192B19611900DEE301 /* GeolocationRequestModel.swift */; };
 		00C75D012B107D6F0072DCB9 /* NotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C75D002B107D6F0072DCB9 /* NotificationViewController.swift */; };
 		00C75D032B1093700072DCB9 /* NotificationTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C75D022B1093700072DCB9 /* NotificationTableViewCell.swift */; };
+		00E59AB32B1F1143000E97D6 /* Int+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E59AB22B1F1143000E97D6 /* Int+Extensions.swift */; };
 		00E773342B1488A800684566 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E773332B1488A800684566 /* HomeViewModel.swift */; };
 		00E773372B14949400684566 /* RealtimeForecastRequestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E773362B14949400684566 /* RealtimeForecastRequestModel.swift */; };
 		00E7733A2B1497C900684566 /* RealtimeForcastService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E773392B1497C900684566 /* RealtimeForcastService.swift */; };
@@ -141,6 +142,7 @@
 		00BB70192B19611900DEE301 /* GeolocationRequestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeolocationRequestModel.swift; sourceTree = "<group>"; };
 		00C75D002B107D6F0072DCB9 /* NotificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewController.swift; sourceTree = "<group>"; };
 		00C75D022B1093700072DCB9 /* NotificationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationTableViewCell.swift; sourceTree = "<group>"; };
+		00E59AB22B1F1143000E97D6 /* Int+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Extensions.swift"; sourceTree = "<group>"; };
 		00E773332B1488A800684566 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		00E773362B14949400684566 /* RealtimeForecastRequestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealtimeForecastRequestModel.swift; sourceTree = "<group>"; };
 		00E773392B1497C900684566 /* RealtimeForcastService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealtimeForcastService.swift; sourceTree = "<group>"; };
@@ -386,6 +388,7 @@
 				00E7733D2B14C81C00684566 /* Date+Extensions.swift */,
 				005035692B159C1700F8B7F2 /* Reactive+Extensions.swift */,
 				00F0AAB52B1638460003214F /* String+Extensinos.swift */,
+				00E59AB22B1F1143000E97D6 /* Int+Extensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -787,6 +790,7 @@
 				00A2B6AC2B0F5BC000ACF23A /* NextForecastHeaderView.swift in Sources */,
 				003084BC2B16EF2000D7A22D /* TodayWeatherDataSection.swift in Sources */,
 				0031E9792B1839C600259EC2 /* SkyConditionForecastService.swift in Sources */,
+				00E59AB32B1F1143000E97D6 /* Int+Extensions.swift in Sources */,
 				00E7733E2B14C81C00684566 /* Date+Extensions.swift in Sources */,
 				00C75D012B107D6F0072DCB9 /* NotificationViewController.swift in Sources */,
 				0050356C2B15BE7C00F8B7F2 /* AddressResponseModel.swift in Sources */,

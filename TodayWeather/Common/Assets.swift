@@ -23,4 +23,11 @@ final class Assets {
     
     // MARK: - Search Images
     static let focusIcon = "focusIcon"
+    
+    // MARK: - Weather Icons
+    static let clearIcon = "clearIcon"
+    static let chancetstormsIcon = "chancetstormsIcon"
+    static let chancesnowIcon = "chancesnowIcon"
+    static let mostlycloudyIcon = "mostlycloudyIcon"
+    static let cloudyIcon = "cloudyIcon"
 }

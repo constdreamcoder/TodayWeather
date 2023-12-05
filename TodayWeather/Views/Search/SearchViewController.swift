@@ -85,13 +85,6 @@ final class SearchViewController: UIViewController {
         
         SearchViewModel.shared.isSearchMode = false
     }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesBegan(touches, with: event)
-        
-        navigationItem.titleView?.becomeFirstResponder()
-    }
-    
 }
 
 // MARK: - UI 관련
@@ -147,7 +140,6 @@ private extension SearchViewController {
     }
     
     func showTableView(isHidden: Bool) {
-        print("isHidden: \(isHidden)")
         searchTableView.isHidden = isHidden
         bottomSupplimentaryView.isHidden = isHidden
     }
@@ -227,7 +219,6 @@ extension SearchViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if searchBar.text != "" {
-            print("클릭")
             SearchViewModel.shared.isSearchMode = true
             SearchViewModel.shared.searchAddressList()
             searchBar.resignFirstResponder()
@@ -291,7 +282,6 @@ private extension SearchViewController {
         let handler = { [weak self,latitude, longitude] (overlay: NMFOverlay) -> Bool in
             guard let weakSelf = self else { return false }
             if let infoWindow = overlay as? NMFInfoWindow {
-                print("터치됨")
                 let detailVC = DetailViewController()
                 weakSelf.navigationController?.pushViewController(detailVC, animated: true)
             }

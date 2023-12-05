@@ -50,7 +50,7 @@ extension Items {
         // 온도, 예보시간 추가
         item.forEach { item in
             if item.category == Category.T1H.rawValue {
-                var todayWeatherForecast = TodayWeatherForecasts(temperature: "", skyCondition: .sunny, time: "00:00")
+                var todayWeatherForecast = TodayWeatherForecasts(temperature: "", skyCondition: .cloudy, time: "00:00")
                 todayWeatherForecast.temperature = item.fcstValue
                 todayWeatherForecast.time = item.fcstTime.addColonInTheMiddle
                 todayWeatherForecastList.append(todayWeatherForecast)
@@ -77,12 +77,9 @@ extension Items {
               let currentSkyConditionItem = item.first(where: { $0.category == Category.SKY.rawValue })
         else {
             print("네트워크 오류가 발생하였습니다!")
-            return WeatherConditionOfCurrentLocation(todayDate: .now, temperature: 0, windSpeed: 0, humidity: 0, skyCondition: .sunny)
+            return WeatherConditionOfCurrentLocation(todayDate: .now, temperature: 0, windSpeed: 0, humidity: 0, skyCondition: .clear)
         }
-//        print("현재온도: \(String(describing: currentTemperature))")
-//        print("현재풍속: \(String(describing: currentWindCondition))")
-//        print("현재습도: \(String(describing: currentHumidity))")
-//        print("현재 하늘 상태: \(currentSkyConditionItem)")
+        
         let currentSkyCondition = convertStringToSkyCondition(currentSkyConditionItem)
         
         return WeatherConditionOfCurrentLocation(
@@ -109,20 +106,21 @@ extension Items {
     }
     
     enum SkyCondition: Int, CaseIterable {
-        case sunny = 1
-        case lotsOfClouds = 3
+        case clear = 1
+        case mostlyCloudy = 3
         case cloudy = 4
         
         var convertToKorean: String {
             switch self {
-            case .sunny:
+            case .clear:
                 return "맑음"
-            case .lotsOfClouds:
+            case .mostlyCloudy:
                 return "구름많음"
             case .cloudy:
                 return "흐림"
             }
         }
+
     }
 }
 

@@ -19,11 +19,31 @@ class NextForecastTableViewCell: UITableViewCell {
         return label
     }()
     
-    private lazy var forecastImageView: UIImageView = {
+    private lazy var forecastAMImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "cloud.sun.rain.fill")?.withRenderingMode(.alwaysOriginal)
         imageView.contentMode = .scaleAspectFill
         return imageView
+    }()
+    
+    private lazy var forecastPMImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "cloud.sun.rain.fill")?.withRenderingMode(.alwaysOriginal)
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
+    
+    private lazy var forecastImageStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 7
+        stackView.alignment = .center
+        stackView.distribution = .equalCentering
+        [
+            forecastAMImageView,
+            forecastPMImageView
+        ].forEach { stackView.addArrangedSubview($0) }
+        return stackView
     }()
     
     private lazy var temperatureLabel: UILabel = {
@@ -51,6 +71,24 @@ class NextForecastTableViewCell: UITableViewCell {
         else { return }
         dateLabel.text = date.getTodayDate
         temperatureLabel.text = "\(minTemperature) / \(maxTemperature)°C"
+
+        switch item.skyConditionItem?.skyConditionAM?.convertToSkyCondition {
+            case .mostlyCloudy:
+                forecastAMImageView.image = UIImage(named: Assets.mostlycloudyIcon)?.withRenderingMode(.alwaysOriginal)
+            case .cloudy:
+                forecastAMImageView.image = UIImage(named: Assets.cloudyIcon)?.withRenderingMode(.alwaysOriginal)
+            case .clear, .none:
+                forecastAMImageView.image = UIImage(named: Assets.clearIcon)?.withRenderingMode(.alwaysOriginal)
+        }
+        
+        switch item.skyConditionItem?.skyConditionPM?.convertToSkyCondition {
+        case .mostlyCloudy:
+            forecastPMImageView.image = UIImage(named: Assets.mostlycloudyIcon)?.withRenderingMode(.alwaysOriginal)
+        case .cloudy:
+            forecastPMImageView.image = UIImage(named: Assets.cloudyIcon)?.withRenderingMode(.alwaysOriginal)
+        case .clear, .none:
+            forecastPMImageView.image = UIImage(named: Assets.clearIcon)?.withRenderingMode(.alwaysOriginal)
+        }
         
     }
 }
@@ -63,7 +101,7 @@ private extension NextForecastTableViewCell {
         
         [
             dateLabel,
-            forecastImageView,
+            forecastImageStackView,
             temperatureLabel
         ].forEach { addSubview($0) }
         
@@ -71,14 +109,21 @@ private extension NextForecastTableViewCell {
             $0.centerY.leading.equalToSuperview()
         }
         
-        forecastImageView.snp.makeConstraints {
-            $0.center.equalToSuperview()
+        forecastAMImageView.snp.makeConstraints {
             $0.width.height.equalTo(30.0)
+        }
+        
+        forecastPMImageView.snp.makeConstraints {
+            $0.width.height.equalTo(30.0)
+        }
+        
+        forecastImageStackView.snp.makeConstraints {
+            $0.center.equalToSuperview()
         }
         
         temperatureLabel.snp.makeConstraints {
             $0.centerY.equalToSuperview()
-            $0.trailing.equalToSuperview().inset(40.0)
+            $0.trailing.equalToSuperview().inset(30.0)
         }
     }
 }

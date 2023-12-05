@@ -24,7 +24,7 @@ class TodayWeatherDetailCollectionViewCell: UICollectionViewCell {
     private lazy var skyConditionImageView: UIImageView = {
        let imageView = UIImageView()
         imageView.image = UIImage(systemName: "cloud.moon.rain.fill")?.withRenderingMode(.alwaysOriginal)
-        imageView.contentMode = .scaleToFill
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
@@ -57,9 +57,18 @@ class TodayWeatherDetailCollectionViewCell: UICollectionViewCell {
     }
     
     func bind(item: TodayWeatherDataSection.Item) {
-        temperatureLabel.text = item.temperature + "°C"
+        temperatureLabel.text = item.temperature + "°"
         // TODO: - 하늘 상태에 따른 skyConditionImageView 이미지 변경하기
         timeLabel.text = item.time
+        switch item.skyCondition {
+        case .clear:
+            skyConditionImageView.image = UIImage(named: Assets.clearIcon)?.withRenderingMode(.alwaysOriginal)
+        case .mostlyCloudy:
+            skyConditionImageView.image = UIImage(named: Assets.mostlycloudyIcon)?.withRenderingMode(.alwaysOriginal)
+        case .cloudy:
+            skyConditionImageView.image = UIImage(named: Assets.cloudyIcon)?.withRenderingMode(.alwaysOriginal)
+        }
+       
     }
 }
 
@@ -76,7 +85,7 @@ private extension TodayWeatherDetailCollectionViewCell {
         addSubview(todayWeatherInfoStackView)
         
         skyConditionImageView.snp.makeConstraints {
-            $0.width.height.equalTo(30.0)
+            $0.width.height.equalTo(45.0)
         }
         
         todayWeatherInfoStackView.snp.makeConstraints {

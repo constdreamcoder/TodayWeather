@@ -69,7 +69,6 @@ extension HomeViewModel: CLLocationManagerDelegate {
                 .bind(to: currentLocationRelay)
                 
             userLocation = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
-            print(userLocation.x, userLocation.y)
             let baseDateAndTime = Date().getBaseDateAndTimeForRealtimeForecast
             
             getWeatherConditionOfCurrentLocationObservable(nx: userLocation.x, ny: userLocation.y)
@@ -86,7 +85,7 @@ extension HomeViewModel: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("error: \(error)")
+        print("사용자 위치 검색중 오류발생: \(error)")
     }
     
     // 사용자 위치 접근 상태 확인 메소드

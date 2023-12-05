@@ -50,11 +50,11 @@ extension DWFItems {
                 }
                 
                 if dwfItem.category == .sky && dwfItem.fcstTime == "0900" {
-                    skyConditionAM = dwfItem.fcstValue
+                    skyConditionAM = dwfItem.fcstValue.converToInt.convertToSkyCondition.convertToKorean
                 }
                 
                 if dwfItem.category == .sky && dwfItem.fcstTime == "1600" {
-                    skyConditionPM = dwfItem.fcstValue
+                    skyConditionPM = dwfItem.fcstValue.converToInt.convertToSkyCondition.convertToKorean
                 }
             }
         }
@@ -100,11 +100,11 @@ extension DWFItems {
                     
                     // 내일 오전 하늘 상태
                     if dwfItem.category == .sky && dwfItem.fcstTime == "0900" {
-                        nextForecastSkyConditionAfterOnedaysItem?.skyConditionAM = dwfItem.fcstValue
+                        nextForecastSkyConditionAfterOnedaysItem?.skyConditionAM = dwfItem.fcstValue.converToInt.convertToSkyCondition.convertToKorean
                     }
                     // 내일 오후 하늘 상태
                     if dwfItem.category == .sky && dwfItem.fcstTime == "1600" {
-                        nextForecastSkyConditionAfterOnedaysItem?.skyConditionPM = dwfItem.fcstValue
+                        nextForecastSkyConditionAfterOnedaysItem?.skyConditionPM = dwfItem.fcstValue.converToInt.convertToSkyCondition.convertToKorean
                     }
                     
                     if nextForecastSkyConditionAfterOnedaysItem?.skyConditionAM != nil
@@ -132,11 +132,11 @@ extension DWFItems {
                     
                     // 모레 오전 하늘 상태
                     if dwfItem.category == .sky && dwfItem.fcstTime == "0900" {
-                        nextForecastSkyConditionAfterTwodaysItem?.skyConditionAM = dwfItem.fcstValue
+                        nextForecastSkyConditionAfterTwodaysItem?.skyConditionAM = dwfItem.fcstValue.converToInt.convertToSkyCondition.convertToKorean
                     }
                     // 모레 오후 하늘 상태
                     if dwfItem.category == .sky && dwfItem.fcstTime == "1600" {
-                        nextForecastSkyConditionAfterTwodaysItem?.skyConditionPM = dwfItem.fcstValue
+                        nextForecastSkyConditionAfterTwodaysItem?.skyConditionPM = dwfItem.fcstValue.converToInt.convertToSkyCondition.convertToKorean
                     }
                     
                     if nextForecastSkyConditionAfterTwodaysItem?.skyConditionAM != nil

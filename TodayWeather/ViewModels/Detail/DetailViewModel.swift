@@ -34,9 +34,7 @@ final class DetailViewModel {
 // MARK: - 오늘 예보 관련 메소드
 extension DetailViewModel {
     func reSetupTodayWeatherForecastList(latitude: Double, longitude: Double) {
-        print(latitude, longitude)
         let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
-        print(convertedXY.x, convertedXY.y)
         HomeViewModel.shared.getWeatherConditionOfCurrentLocationObservable(nx: convertedXY.x, ny: convertedXY.y)
             .take(1)
             .subscribe { [weak self] _ in
@@ -57,7 +55,6 @@ extension DetailViewModel {
                 .take(1)
                 .subscribe { [weak self] userLocation in
                     guard let weakSelf = self else { return }
-                    print("lat: \(userLocation[0]), lng: \(userLocation[1])")
                     weakSelf.setupNextForecastList(
                         regIdForTemp: "11B10101",
                         regIdForSky: "11B00000",
@@ -121,7 +118,7 @@ extension DetailViewModel {
                     
                     nextForecastList.append(nextForecastItem)
                 }
-                print("ss")
+                print("fetch is done")
                 return nextForecastList
             }
             .take(1)

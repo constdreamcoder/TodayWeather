@@ -113,7 +113,6 @@ final class SearchViewModel {
     
     func getWeatherForecastInfosOfSelectedRegion(latitude: Double, longitude: Double) {
         let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
-        print(convertedXY.x, convertedXY.y)
         
         Observable.combineLatest(
             DailyWeatherForecastService.shared.fetchDailyWeatherForecastInfosRx(

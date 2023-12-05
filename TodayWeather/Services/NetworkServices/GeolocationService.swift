@@ -56,7 +56,6 @@ private extension GeolocationService {
             case .success(let response):
                 completionHandler(.success(response.addresses))
             case .failure(let error):
-                print(error)
                 completionHandler(.failure(error))
             }
         }

@@ -58,7 +58,6 @@ private extension SkyConditionForecastService {
             case .success(let response):
                 completionHandler(.success(response.response.body.items.item[0]))
             case .failure(let error):
-                print(error)
                 completionHandler(.failure(error))
             }
         }

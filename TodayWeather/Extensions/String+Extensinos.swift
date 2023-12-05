@@ -22,4 +22,14 @@ extension String {
     var converToInt: Int {
         return Int(self) ?? 0
     }
+    
+    var convertToSkyCondition: Items.SkyCondition {
+        if self == "흐림" {
+            return .cloudy
+        } else if self == "구름많음" {
+            return .mostlyCloudy
+        } else { // self == "맑음" 일 경우
+            return .clear
+        }
+    }
 }
