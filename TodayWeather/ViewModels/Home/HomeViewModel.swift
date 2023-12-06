@@ -19,7 +19,9 @@ final class HomeViewModel: NSObject {
     var currentLocationRelay = PublishRelay<String>()
     
     var userLocation = ConvertXY.LatXLngY()
-            
+    
+    var isInitialized: Bool = false
+    
     private override init() {
         super.init()
         
@@ -57,30 +59,36 @@ extension HomeViewModel: CLLocationManagerDelegate {
             print("위치 업데이트")
             print("위도 : \(location.coordinate.latitude)")
             print("경도 : \(location.coordinate.longitude)")
-
-            let latitude = location.coordinate.latitude
-            let longitude = location.coordinate.longitude
             
-            KoreanAddressService.shared.convertLatAndLngToKoreanAddressRx(latitude: latitude, longitude: longitude)
-                .map { region in
-                    return region.getAddress()
-                }
-                .take(1)
-                .bind(to: currentLocationRelay)
+            if !isInitialized {
+                isInitialized = true
                 
-            userLocation = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
-            let baseDateAndTime = Date().getBaseDateAndTimeForRealtimeForecast
-            
-            getWeatherConditionOfCurrentLocationObservable(nx: userLocation.x, ny: userLocation.y)
-                .take(1)
-                .bind(to: currentWeatherConditionObservable)
-            
-            // Search로 전달
-            Observable.just([latitude, longitude], scheduler: ConcurrentDispatchQueueScheduler(qos: .default))
-                .take(1)
-                .subscribe { userLocation in
-                    SearchViewModel.shared.userLocationSubject.onNext(userLocation)
-                }
+                let latitude = location.coordinate.latitude
+                let longitude = location.coordinate.longitude
+                
+                KoreanAddressService.shared.convertLatAndLngToKoreanAddressRx(latitude: latitude, longitude: longitude)
+                    .map { region in
+                        return region.getAddress()
+                    }
+                    .take(1)
+                    .bind(to: currentLocationRelay)
+                
+                userLocation = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
+                let baseDateAndTime = Date().getBaseDateAndTimeForRealtimeForecast
+                
+                getWeatherConditionOfCurrentLocationObservable(nx: userLocation.x, ny: userLocation.y)
+                    .take(1)
+                    .bind(to: currentWeatherConditionObservable)
+                
+                // Search로 전달
+                Observable.just([latitude, longitude], scheduler: ConcurrentDispatchQueueScheduler(qos: .default))
+                    .take(1)
+                    .subscribe { userLocation in
+                        SearchViewModel.shared.userLocationSubject.onNext(userLocation)
+                    }
+            } else {
+                print("초기화됨")
+            }
         }
     }
     

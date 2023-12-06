@@ -22,6 +22,10 @@
 		003447CD2B1C3D2C00B1D24F /* DailyWeatherForecastRequestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003447CC2B1C3D2C00B1D24F /* DailyWeatherForecastRequestModel.swift */; };
 		003447CF2B1C3E8B00B1D24F /* DailyWeatherForecastResponseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003447CE2B1C3E8B00B1D24F /* DailyWeatherForecastResponseModel.swift */; };
 		003447D12B1C4FDB00B1D24F /* InfoWindowContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003447D02B1C4FDB00B1D24F /* InfoWindowContents.swift */; };
+		003989BA2B1F7E1F007CFD53 /* Realm in Frameworks */ = {isa = PBXBuildFile; productRef = 003989B92B1F7E1F007CFD53 /* Realm */; };
+		003989BC2B1F7E1F007CFD53 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 003989BB2B1F7E1F007CFD53 /* RealmSwift */; };
+		003989BF2B1F7EDE007CFD53 /* RxRealm in Frameworks */ = {isa = PBXBuildFile; productRef = 003989BE2B1F7EDE007CFD53 /* RxRealm */; };
+		003989C22B1F7F5A007CFD53 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 003989C12B1F7F5A007CFD53 /* SnapKit */; };
 		004148542B0E270D005C14D6 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004148532B0E270D005C14D6 /* DetailViewController.swift */; };
 		0041485C2B0E3F3A005C14D6 /* TodayWeatherDetailCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0041485B2B0E3F3A005C14D6 /* TodayWeatherDetailCollectionViewCell.swift */; };
 		0050356A2B159C1700F8B7F2 /* Reactive+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 005035692B159C1700F8B7F2 /* Reactive+Extensions.swift */; };
@@ -29,6 +33,11 @@
 		0050356E2B15C0F800F8B7F2 /* KoreanAddressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0050356D2B15C0F800F8B7F2 /* KoreanAddressService.swift */; };
 		005035702B15C2A900F8B7F2 /* AddressRequestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0050356F2B15C2A900F8B7F2 /* AddressRequestModel.swift */; };
 		005035732B15D93000F8B7F2 /* ConvertXY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 005035722B15D93000F8B7F2 /* ConvertXY.swift */; };
+		00677A232B1F79370015F34D /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 00677A222B1F79370015F34D /* Alamofire */; };
+		00677A262B1F79F10015F34D /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 00677A252B1F79F10015F34D /* RxCocoa */; };
+		00677A282B1F79F10015F34D /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 00677A272B1F79F10015F34D /* RxSwift */; };
+		00677A2B2B1F7A5E0015F34D /* Differentiator in Frameworks */ = {isa = PBXBuildFile; productRef = 00677A2A2B1F7A5E0015F34D /* Differentiator */; };
+		00677A2D2B1F7A5E0015F34D /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = 00677A2C2B1F7A5E0015F34D /* RxDataSources */; };
 		007B16212B1AF04700E284AA /* RecentlySearchedAddressModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 007B16202B1AF04700E284AA /* RecentlySearchedAddressModel.swift */; };
 		007B16252B1AF34A00E284AA /* RecentlySearchedAddressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 007B16242B1AF34A00E284AA /* RecentlySearchedAddressService.swift */; };
 		007C0A5A2B0C5823007A4591 /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 007C0A592B0C5823007A4591 /* Assets.swift */; };
@@ -170,7 +179,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				003989BC2B1F7E1F007CFD53 /* RealmSwift in Frameworks */,
+				003989BA2B1F7E1F007CFD53 /* Realm in Frameworks */,
+				00677A262B1F79F10015F34D /* RxCocoa in Frameworks */,
+				00677A2B2B1F7A5E0015F34D /* Differentiator in Frameworks */,
+				00677A232B1F79370015F34D /* Alamofire in Frameworks */,
+				00677A2D2B1F7A5E0015F34D /* RxDataSources in Frameworks */,
+				003989BF2B1F7EDE007CFD53 /* RxRealm in Frameworks */,
+				00677A282B1F79F10015F34D /* RxSwift in Frameworks */,
 				7FDFA50FB2701609474E3463 /* Pods_TodayWeather.framework in Frameworks */,
+				003989C22B1F7F5A007CFD53 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,8 +339,8 @@
 				007C6F852B0B8F4E0035BD38 /* SceneDelegate.swift */,
 				005035712B15D91800F8B7F2 /* Helpers */,
 				007C6FBA2B0BA1570035BD38 /* Common */,
-				00E773382B14977200684566 /* Services */,
 				007C6FB72B0B9FE70035BD38 /* Extensions */,
+				00E773382B14977200684566 /* Services */,
 				007C6FB52B0B92DE0035BD38 /* ViewModels */,
 				007C6FB42B0B92D60035BD38 /* Views */,
 				007C6FB32B0B92C60035BD38 /* Models */,
@@ -523,13 +541,24 @@
 				007C6F7C2B0B8F4E0035BD38 /* Sources */,
 				007C6F7D2B0B8F4E0035BD38 /* Frameworks */,
 				007C6F7E2B0B8F4E0035BD38 /* Resources */,
-				1A352D5E97A37E2136BDB776 /* [CP] Embed Pods Frameworks */,
+				866A36627F4647092276B0A1 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = TodayWeather;
+			packageProductDependencies = (
+				00677A222B1F79370015F34D /* Alamofire */,
+				00677A252B1F79F10015F34D /* RxCocoa */,
+				00677A272B1F79F10015F34D /* RxSwift */,
+				00677A2A2B1F7A5E0015F34D /* Differentiator */,
+				00677A2C2B1F7A5E0015F34D /* RxDataSources */,
+				003989B92B1F7E1F007CFD53 /* Realm */,
+				003989BB2B1F7E1F007CFD53 /* RealmSwift */,
+				003989BE2B1F7EDE007CFD53 /* RxRealm */,
+				003989C12B1F7F5A007CFD53 /* SnapKit */,
+			);
 			productName = TodayWeather;
 			productReference = 007C6F802B0B8F4E0035BD38 /* TodayWeather.app */;
 			productType = "com.apple.product-type.application";
@@ -561,7 +590,7 @@
 				007C6F9C2B0B8F4F0035BD38 /* Sources */,
 				007C6F9D2B0B8F4F0035BD38 /* Frameworks */,
 				007C6F9E2B0B8F4F0035BD38 /* Resources */,
-				ECD0DB99D6A57A959FCD8623 /* [CP] Embed Pods Frameworks */,
+				93E581D3AA0399EE0AD92C44 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -605,6 +634,14 @@
 				Base,
 			);
 			mainGroup = 007C6F772B0B8F4E0035BD38;
+			packageReferences = (
+				00677A212B1F79370015F34D /* XCRemoteSwiftPackageReference "Alamofire" */,
+				00677A242B1F79F10015F34D /* XCRemoteSwiftPackageReference "RxSwift" */,
+				00677A292B1F7A5E0015F34D /* XCRemoteSwiftPackageReference "RxDataSources" */,
+				003989B82B1F7E1F007CFD53 /* XCRemoteSwiftPackageReference "realm-swift" */,
+				003989BD2B1F7EDE007CFD53 /* XCRemoteSwiftPackageReference "RxRealm" */,
+				003989C02B1F7F5A007CFD53 /* XCRemoteSwiftPackageReference "SnapKit" */,
+			);
 			productRefGroup = 007C6F812B0B8F4E0035BD38 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -644,7 +681,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		1A352D5E97A37E2136BDB776 /* [CP] Embed Pods Frameworks */ = {
+		866A36627F4647092276B0A1 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -659,6 +696,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TodayWeather/Pods-TodayWeather-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		93E581D3AA0399EE0AD92C44 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TodayWeather-TodayWeatherUITests/Pods-TodayWeather-TodayWeatherUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TodayWeather-TodayWeatherUITests/Pods-TodayWeather-TodayWeatherUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TodayWeather-TodayWeatherUITests/Pods-TodayWeather-TodayWeatherUITests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		AAD43DE5AA17B8D26DFFC9C7 /* [CP] Check Pods Manifest.lock */ = {
@@ -725,23 +779,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		ECD0DB99D6A57A959FCD8623 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TodayWeather-TodayWeatherUITests/Pods-TodayWeather-TodayWeatherUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TodayWeather-TodayWeatherUITests/Pods-TodayWeather-TodayWeatherUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TodayWeather-TodayWeatherUITests/Pods-TodayWeather-TodayWeatherUITests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1154,6 +1191,105 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		003989B82B1F7E1F007CFD53 /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-swift.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		003989BD2B1F7EDE007CFD53 /* XCRemoteSwiftPackageReference "RxRealm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RxSwiftCommunity/RxRealm.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		003989C02B1F7F5A007CFD53 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.6.0;
+			};
+		};
+		00677A212B1F79370015F34D /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.8.1;
+			};
+		};
+		00677A242B1F79F10015F34D /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.6.0;
+			};
+		};
+		00677A292B1F7A5E0015F34D /* XCRemoteSwiftPackageReference "RxDataSources" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RxSwiftCommunity/RxDataSources.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		003989B92B1F7E1F007CFD53 /* Realm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 003989B82B1F7E1F007CFD53 /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = Realm;
+		};
+		003989BB2B1F7E1F007CFD53 /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 003989B82B1F7E1F007CFD53 /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
+		};
+		003989BE2B1F7EDE007CFD53 /* RxRealm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 003989BD2B1F7EDE007CFD53 /* XCRemoteSwiftPackageReference "RxRealm" */;
+			productName = RxRealm;
+		};
+		003989C12B1F7F5A007CFD53 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 003989C02B1F7F5A007CFD53 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		00677A222B1F79370015F34D /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00677A212B1F79370015F34D /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		00677A252B1F79F10015F34D /* RxCocoa */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00677A242B1F79F10015F34D /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxCocoa;
+		};
+		00677A272B1F79F10015F34D /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00677A242B1F79F10015F34D /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
+		};
+		00677A2A2B1F7A5E0015F34D /* Differentiator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00677A292B1F7A5E0015F34D /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = Differentiator;
+		};
+		00677A2C2B1F7A5E0015F34D /* RxDataSources */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00677A292B1F7A5E0015F34D /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = RxDataSources;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 007C6F782B0B8F4E0035BD38 /* Project object */;
 }

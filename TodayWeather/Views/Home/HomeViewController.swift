@@ -31,7 +31,7 @@ final class HomeViewController: UIViewController {
     // TODO: - 하늘 상태에 따른 이미지 구현하기
     private lazy var skyConditionImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: Assets.sunnyWeather)
+        imageView.image = UIImage(named: Assets.sun)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -117,6 +117,20 @@ private extension HomeViewController {
     func updateViews() {
         HomeViewModel.shared.currentLocationRelay
             .bind(to: searchLocationButton.rx.title(for: .normal))
+            .disposed(by: disposeBag)
+        
+        HomeViewModel.shared.currentWeatherConditionObservable
+            .map { currentWeatherCondition -> UIImage?  in
+                switch currentWeatherCondition.skyCondition {
+                case .clear:
+                    return UIImage(named: Assets.sun)
+                case .mostlyCloudy:
+                    return UIImage(named: Assets.sunClouds)
+                case .cloudy:
+                    return UIImage(named: Assets.clouds)
+                }
+            }
+            .bind(to: skyConditionImageView.rx.image)
             .disposed(by: disposeBag)
     }
 }

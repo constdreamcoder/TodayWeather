@@ -30,4 +30,9 @@ final class Assets {
     static let chancesnowIcon = "chancesnowIcon"
     static let mostlycloudyIcon = "mostlycloudyIcon"
     static let cloudyIcon = "cloudyIcon"
+    
+    // MARK: - Weather Pictures
+    static let sun = "sun"
+    static let sunClouds = "sunClouds"
+    static let clouds = "clouds"
 }

@@ -7,6 +7,7 @@
 
 import Alamofire
 import RxSwift
+import Foundation
 
 final class SkyConditionForecastService {
     static let shared = SkyConditionForecastService()

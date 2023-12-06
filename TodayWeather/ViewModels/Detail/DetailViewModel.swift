@@ -9,6 +9,7 @@ import Foundation
 import RxSwift
 import RxRelay
 import RxDataSources
+import UIKit
 
 struct NextForecastItem {
     var date: Date?

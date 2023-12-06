@@ -70,7 +70,7 @@ class NextForecastTableViewCell: UITableViewCell {
               let maxTemperature = item.temperatureItem?.max
         else { return }
         dateLabel.text = date.getTodayDate
-        temperatureLabel.text = "\(minTemperature) / \(maxTemperature)°C"
+        temperatureLabel.text = "\(minTemperature)° / \(maxTemperature)°"
 
         switch item.skyConditionItem?.skyConditionAM?.convertToSkyCondition {
             case .mostlyCloudy:

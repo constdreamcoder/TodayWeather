@@ -6,6 +6,7 @@
 //
 
 import RealmSwift
+import Foundation
 
 final class RecentlySearchedAddressModel: Object {
     @Persisted var address: String

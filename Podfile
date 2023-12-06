@@ -6,14 +6,7 @@ target 'TodayWeather' do
   use_frameworks!
 
   # Pods for TodayWeather
-  pod 'SnapKit'
   pod 'NMapsMap'
-  pod 'RxSwift'
-  pod 'RxCocoa'
-  pod 'RxDataSources' 
-  pod 'Alamofire'
-  pod "RxRealm"
-  pod 'RealmSwift'
 
   target 'TodayWeatherTests' do
     inherit! :search_paths
