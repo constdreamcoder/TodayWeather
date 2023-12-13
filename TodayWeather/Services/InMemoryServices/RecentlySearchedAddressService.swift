@@ -9,11 +9,9 @@ import RealmSwift
 import RxSwift
 
 final class RecentlySearchedAddressService {
-    static let shared = RecentlySearchedAddressService()
-    
     private let database: Realm
     
-    private init() {
+    init() {
         self.database = try! Realm()
     }
     

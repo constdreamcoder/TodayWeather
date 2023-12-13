@@ -10,9 +10,7 @@ import RxSwift
 import Foundation
 
 final class GeolocationService {
-    static let shared = GeolocationService()
-    
-    private init() {}
+    init() {}
     
     func fetchGeolocationRx(
         query: String?

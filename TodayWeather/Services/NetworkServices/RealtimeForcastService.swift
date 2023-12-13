@@ -10,10 +10,9 @@ import RxSwift
 import Foundation
 
 final class RealtimeForcastService {
-    static let shared = RealtimeForcastService()
     private let SERVICE_KEY = "tXma2V1mtyxRBkl0cL0LCpal1tBAJhM3WvCQHZf%2BP1LRscz8vEP1DYfPxnNb1cMmUjMc3bEsv8YHRkdNoA67YQ%3D%3D"
     
-    private init() {}
+    init() {}
     
     func fetchRealtimeForecastsRx(
         nx: Int,

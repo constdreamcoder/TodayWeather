@@ -89,7 +89,6 @@ class NextForecastTableViewCell: UITableViewCell {
         case .clear, .none:
             forecastPMImageView.image = UIImage(named: Assets.clearIcon)?.withRenderingMode(.alwaysOriginal)
         }
-        
     }
 }
 

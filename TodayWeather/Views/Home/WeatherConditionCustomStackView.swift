@@ -11,8 +11,6 @@ import RxSwift
 import RxCocoa
 
 final class WeatherConditionCustomStackView: UIStackView {
-
-    private var forecast: Forecast?
     
     private lazy var iconImageView: UIImageView = {
         let imageView = UIImageView()
@@ -46,13 +44,22 @@ final class WeatherConditionCustomStackView: UIStackView {
         return label
     }()
     
+    private var homeViewModel: HomeViewModel
+    private var output: HomeViewModel.Output
+    private var forecast: Forecast?
+
     private var disposeBag = DisposeBag()
     
-    init(forecast: Forecast) {
-        super.init(frame: .zero)
-        
+    init(
+        homeViewModel: HomeViewModel, 
+        output: HomeViewModel.Output,
+        forecast: Forecast
+    ) {
+        self.homeViewModel = homeViewModel
+        self.output = output
         self.forecast = forecast
         
+        super.init(frame: .zero)
         initialize()
     }
     
@@ -92,17 +99,18 @@ private extension WeatherConditionCustomStackView {
         case .windy:
             iconImageView.image = UIImage(named: Assets.windIcon)
             windLabel.text = "바람"
-            HomeViewModel.shared.currentWeatherConditionObservable
+            output.currentWeatherCondition
                 .map { "\($0.windSpeed) m/s" }
-                .bind(to: valueLabel.rx.text)
+                .drive(valueLabel.rx.text)
                 .disposed(by: disposeBag)
         case .humidity:
             iconImageView.image = UIImage(named: Assets.humidityIcon)
             windLabel.text = "습도"
-            HomeViewModel.shared.currentWeatherConditionObservable
+            output.currentWeatherCondition
                 .map { "\(Int($0.humidity)) %" }
-                .bind(to: valueLabel.rx.text)
+                .drive(valueLabel.rx.text)
                 .disposed(by: disposeBag)
+         
         default:
             break
         }

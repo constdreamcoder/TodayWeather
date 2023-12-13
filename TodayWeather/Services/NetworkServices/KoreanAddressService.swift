@@ -10,11 +10,10 @@ import RxSwift
 import Foundation
 
 final class KoreanAddressService {
-    static let shared = KoreanAddressService()
     private let CLIENT_ID = "06aiesyl8c"
     private let CLIENT_SECRET = "nk2aD2cIqm1JJ4ZLar1xWNRcH1hPjL7Q8aKlE21V"
     
-    private init() {}
+    init() {}
     
     func convertLatAndLngToKoreanAddressRx(
         latitude: Double,

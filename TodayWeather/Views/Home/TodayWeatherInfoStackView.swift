@@ -41,18 +41,33 @@ final class TodayWeatherInfoStackView: UIStackView {
     }()
     
     private lazy var todayWindInfoStackView: WeatherConditionCustomStackView = {
-        let stackView = WeatherConditionCustomStackView(forecast: .windy)
+        let stackView = WeatherConditionCustomStackView(
+            homeViewModel: homeViewModel,
+            output: output,
+            forecast: .windy
+        )
         return stackView
     }()
     
     private lazy var todayHumidityInfoStackView: WeatherConditionCustomStackView = {
-        let stackView = WeatherConditionCustomStackView(forecast: .humidity)
+        let stackView = WeatherConditionCustomStackView(
+            homeViewModel: homeViewModel, 
+            output: output,
+            forecast: .humidity
+        )
         return stackView
     }()
     
+    private var homeViewModel: HomeViewModel
+    private var output: HomeViewModel.Output
     private var disposeBag = DisposeBag()
-        
-    init() {
+    
+    init(
+        homeViewModel: HomeViewModel,
+        output: HomeViewModel.Output
+    ) {
+        self.homeViewModel = homeViewModel
+        self.output = output
         super.init(frame: .zero)
         
         setupSubViews()
@@ -96,19 +111,19 @@ private extension TodayWeatherInfoStackView {
     }
     
     func updateViews() {
-        HomeViewModel.shared.currentWeatherConditionObservable
+        output.currentWeatherCondition
             .map { "오늘, \($0.todayDate.getTodayDate)" }
-            .bind(to: dateLabel.rx.text)
+            .drive(dateLabel.rx.text)
             .disposed(by: disposeBag)
         
-        HomeViewModel.shared.currentWeatherConditionObservable
-            .map { "\($0.temperature)°C" }
-            .bind(to: temperatureLabel.rx.text)
+        output.currentWeatherCondition
+            .map { "\($0.temperature)°" }
+            .drive(temperatureLabel.rx.text)
             .disposed(by: disposeBag)
         
-        HomeViewModel.shared.currentWeatherConditionObservable
+        output.currentWeatherCondition
             .map { $0.skyCondition.convertToKorean }
-            .bind(to: skyConditionLabel.rx.text)
+            .drive(skyConditionLabel.rx.text)
             .disposed(by: disposeBag)
     }
 }

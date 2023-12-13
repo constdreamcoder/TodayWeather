@@ -48,7 +48,20 @@ final class DetailViewController: UIViewController {
         return tableView
     }()
     
+    private var detailViewModel: DetailViewModel
+    private lazy var input = DetailViewModel.Input()
+    private lazy var output = detailViewModel.transform(input: input)
+    
     private var disposeBag = DisposeBag()
+    
+    init(detailViewModel: DetailViewModel) {
+        self.detailViewModel = detailViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -97,15 +110,14 @@ private extension DetailViewController {
     
     func updateViews() {
         // TodayWeatherCollectionView 설정
-        todayWeatherCollectionViewDataSource = DetailViewModel.shared.configureCollectionViewDataSource()
-        DetailViewModel.shared.todayWeatherDataSectionListRelay
-            .bind(to: todayWeatherCollectionView.rx.items(dataSource: todayWeatherCollectionViewDataSource))
+        todayWeatherCollectionViewDataSource = detailViewModel.configureCollectionViewDataSource()
+        output.todayWeatherList
+            .drive(todayWeatherCollectionView.rx.items(dataSource: todayWeatherCollectionViewDataSource))
             .disposed(by: disposeBag)
-        DetailViewModel.shared.bindDataToCollectionViewSection()
         
         // NextForecastTableView 설정
-        DetailViewModel.shared.nextForecastListRelay
-            .bind(to: nextForecastTableView.rx.items(cellIdentifier: NextForecastTableViewCell.identifier, cellType: NextForecastTableViewCell.self)) { row, element, cell in
+        output.nextForecastList
+            .drive(nextForecastTableView.rx.items(cellIdentifier: NextForecastTableViewCell.identifier, cellType: NextForecastTableViewCell.self)) { row, element, cell in
                 cell.bind(item: element)
             }
             .disposed(by: disposeBag)

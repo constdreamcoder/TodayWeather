@@ -9,9 +9,9 @@ import UIKit
 import SnapKit
 import RxSwift
 import RxCocoa
+import CoreLocation
 
 final class HomeViewController: UIViewController {
-    
     private lazy var searchLocationButton: UIButton = {
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 320, height: 44))
         button.setImage(UIImage(named: Assets.loctionaIcon)?.withTintColor(.white, renderingMode: .alwaysOriginal), for: .normal)
@@ -24,7 +24,6 @@ final class HomeViewController: UIViewController {
         // TODO: 사용자가 터치 시 색깔 정하기
         button.setTitleColor(.clear, for: .highlighted)
         button.titleLabel?.font = .systemFont(ofSize: 23.0, weight: .bold)
-        button.addTarget(self, action: #selector(gotoSearchLocations), for: .touchUpInside)
         return button
     }()
     
@@ -37,7 +36,7 @@ final class HomeViewController: UIViewController {
     }()
     
     private lazy var todayWeatherInfoView: TodayWeatherInfoStackView = {
-        let view = TodayWeatherInfoStackView()
+        let view = TodayWeatherInfoStackView(homeViewModel: homeViewModel, output: output)
         view.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 0.3)
         return view
     }()
@@ -51,11 +50,31 @@ final class HomeViewController: UIViewController {
         // TODO: 사용자가 터치 시 색깔 정하기
         button.setTitleColor(.clear, for: .highlighted)
         button.layer.cornerRadius = 20.0
-        button.addTarget(self, action: #selector(gotoDetailForecast), for: .touchUpInside)
         return button
     }()
     
+    private var homeViewModel: HomeViewModel
+    private var detailViewModel: DetailViewModel?
+    private lazy var input = HomeViewModel.Input(
+        goToNMapTapped: searchLocationButton.rx.tap.asDriver(), 
+        goToDetailVCTapped: forecastReportButton.rx.tap.asDriver()
+    )
+    private lazy var output = homeViewModel.transform(input: input)
     private var disposeBag = DisposeBag()
+    
+    init() {
+        homeViewModel = HomeViewModel(
+            realtimeForcastService: RealtimeForcastService(),
+            koreanAddressService: KoreanAddressService(),
+            locationManager: CLLocationManager()
+        )
+        super.init(nibName: nil, bundle: nil)
+        homeViewModel.delegate = self
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,14 +89,20 @@ final class HomeViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        let homeViewModel = HomeViewModel.shared
-        let latitude = homeViewModel.userLocation.lat
-        let longitude = homeViewModel.userLocation.lng
-        DetailViewModel.shared.reSetupTodayWeatherForecastList(
-            latitude: latitude,
-            longitude: longitude
-        )
-        DetailViewModel.shared.updateNextForecastListWithUserLocation()
+        output.triggerForecastReportAPIs
+            .observe(on: ConcurrentDispatchQueueScheduler(queue: .global()))
+            .bind { [weak self] userLocation in
+                guard let weakSelf = self else { return }
+                weakSelf.detailViewModel = nil
+                weakSelf.detailViewModel = DetailViewModel(
+                    realtimeForcastService: RealtimeForcastService(),
+                    dailyWeatherForecastService: DailyWeatherForecastService(),
+                    temperatureForecastService: TemperatureForecastService(),
+                    skyConditionForecastService: SkyConditionForecastService(),
+                    userLocation: userLocation
+                )
+            }
+            .disposed(by: disposeBag)
     }
 }
 
@@ -115,12 +140,20 @@ private extension HomeViewController {
     }
     
     func updateViews() {
-        HomeViewModel.shared.currentLocationRelay
-            .bind(to: searchLocationButton.rx.title(for: .normal))
+        output.currentAddressOfLocation
+            .drive(searchLocationButton.rx.title(for: .normal))
             .disposed(by: disposeBag)
         
-        HomeViewModel.shared.currentWeatherConditionObservable
-            .map { currentWeatherCondition -> UIImage?  in
+        output.gotoSearchVC
+            .drive()
+            .disposed(by: disposeBag)
+        
+        output.goToDetailVC
+            .drive()
+            .disposed(by: disposeBag)
+        
+        output.currentWeatherCondition
+            .map { currentWeatherCondition -> UIImage? in
                 switch currentWeatherCondition.skyCondition {
                 case .clear:
                     return UIImage(named: Assets.sun)
@@ -129,8 +162,7 @@ private extension HomeViewController {
                 case .cloudy:
                     return UIImage(named: Assets.clouds)
                 }
-            }
-            .bind(to: skyConditionImageView.rx.image)
+            }.drive(skyConditionImageView.rx.image)
             .disposed(by: disposeBag)
     }
 }
@@ -149,14 +181,34 @@ private extension HomeViewController {
     }
     
     @objc func gotoSearchLocations() {
-        let searchVC = SearchViewController()
+       
+    }
+}
+
+extension HomeViewController: HomeNavigator {
+    func gotoSearchVC() {
+        print("눌림")
+        guard let detailViewModel = detailViewModel else { return }
+        guard let userLocation = homeViewModel.userLocation else { return }
+        let searchViewModel = SearchViewModel(
+            geolocationService: GeolocationService(),
+            dailyWeatherForecastService: DailyWeatherForecastService(),
+            realtimeForcastService: RealtimeForcastService(),
+            recentlySearchedAddressService: RecentlySearchedAddressService(),
+            userLocation: userLocation
+        )
+        let searchVC = SearchViewController(
+            searchViewModel: searchViewModel,
+            detailViewModel: detailViewModel
+        )
         navigationController?.pushViewController(searchVC, animated: true)
     }
     
-    @objc func gotoDetailForecast() {
-        let detailVC = UINavigationController(rootViewController: DetailViewController())
+    func gotoDetailVC() {
+        guard let detailViewModel = detailViewModel else { return }
+        guard let userLocation = homeViewModel.userLocation else { return }
+        let detailVC = UINavigationController(rootViewController: DetailViewController(detailViewModel: detailViewModel))
         detailVC.modalPresentationStyle = .overFullScreen
         present(detailVC, animated: true, completion: nil)
     }
 }
-

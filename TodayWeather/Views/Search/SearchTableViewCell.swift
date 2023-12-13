@@ -49,11 +49,8 @@ final class SearchTableViewCell: UITableViewCell {
         locationNameLabel.text = item.address.roadAddress
         if item.isSearchMode {
             timerImageView.isHidden = true
-//            temperatureLabel.isHidden = false
-//            temperatureLabel.text = "\(item.lowestTemperatureForToday)° / \(item.highestTemperatureForToday)°"
         } else {
             timerImageView.isHidden = false
-//            temperatureLabel.isHidden = true
         }
         
     }

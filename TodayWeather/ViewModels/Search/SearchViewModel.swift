@@ -11,17 +11,44 @@ import RxSwift
 import RxRelay
 import RxDataSources
 import RxRealm
+import RxCocoa
 
-final class SearchViewModel {
-    static let shared = SearchViewModel()
+final class SearchViewModel: ViewModelType {
+    struct Input {}
     
-    var userLocationSubject = PublishSubject<[CLLocationDegrees]>()
-    var userLocationRelay = BehaviorRelay<[CLLocationDegrees]>(value: [])
+    struct Output {
+        let userLocation: Driver<ConvertXY.LatXLngY>
+        let searchDataSectionList: Driver<[SearchDataSection]>
+        let infoWindowContents: Driver<String>
+        let searchDataSectionListRelay: BehaviorRelay<[SearchDataSection]>
+    }
     
-    var searchDataSectionListRelay = BehaviorRelay<[SearchDataSection]>(value: [])
+    func transform(input: Input) -> Output {
+        let userLocation = userLocationRelay.asDriver()
+        let searchDataSectionList = searchDataSectionListRelay.asDriver()
+        let infoWindowContents = infoWindowContentsRelay.asDriver(onErrorJustReturn: "")
+        let searchDataSectionListRelay = searchDataSectionListRelay
+        
+        return Output(
+            userLocation: userLocation,
+            searchDataSectionList: searchDataSectionList, 
+            infoWindowContents: infoWindowContents,
+            searchDataSectionListRelay: searchDataSectionListRelay
+        )
+    }
+    
+    private let geolocationService: GeolocationService
+    private let dailyWeatherForecastService: DailyWeatherForecastService
+    private let realtimeForcastService: RealtimeForcastService
+    private let recentlySearchedAddressService: RecentlySearchedAddressService
+    
+    private var userLocationRelay = BehaviorRelay<ConvertXY.LatXLngY>(value: ConvertXY.LatXLngY())
+    private var searchDataSectionListRelay = BehaviorRelay<[SearchDataSection]>(value: [])
+    private var infoWindowContentsRelay = PublishRelay<String>()
+
+    private var dispostBag = DisposeBag()
+
     var searchText: String = ""
-    
-    var infoWindowContentsRelay = PublishRelay<String>()
     
     private var _isSearchMode: Bool = false
     var isSearchMode: Bool {
@@ -33,15 +60,30 @@ final class SearchViewModel {
         }
     }
     
-    private init() {
+    private var userLocation: ConvertXY.LatXLngY?
+
+    init(
+        geolocationService: GeolocationService,
+        dailyWeatherForecastService: DailyWeatherForecastService,
+        realtimeForcastService: RealtimeForcastService,
+        recentlySearchedAddressService: RecentlySearchedAddressService,
+        userLocation: ConvertXY.LatXLngY
+    ) {
+        self.geolocationService = geolocationService
+        self.dailyWeatherForecastService = dailyWeatherForecastService
+        self.realtimeForcastService = realtimeForcastService
+        self.recentlySearchedAddressService = recentlySearchedAddressService
+        
+        self.userLocation = userLocation
+        
         // SearchViewModel과 연결
-        userLocationSubject
-            .take(1)
+        Observable.just(userLocation)
             .bind(to: userLocationRelay)
+            .disposed(by: dispostBag)
     }
     
     func getRecentlySearchedResultList() {
-        let recentlySearchedAddressList = RecentlySearchedAddressService.shared.fetchRecentlySearchedAddressList()
+        let recentlySearchedAddressList = recentlySearchedAddressService.fetchRecentlySearchedAddressList()
         Observable.changeset(from:recentlySearchedAddressList)
             .map { [weak self] results, changes -> [SearchedRegion] in
                 guard let weakSelf = self else { return [] }
@@ -76,17 +118,17 @@ final class SearchViewModel {
                     return searchedRegionList
                 }
             }
-            .take(1)
-            .subscribe(onNext: { [weak self] searchedRegionList in
-                guard let weakSelf = self else { return }
-                weakSelf.searchDataSectionListRelay.accept([
+            .map { searchedRegionList -> [SearchDataSection] in
+                return [
                     SearchDataSection(items: searchedRegionList)
-                ])
-            })
+                ]
+            }
+            .bind(to: searchDataSectionListRelay)
+            .disposed(by: dispostBag)
     }
     
     func searchAddressList() {
-        GeolocationService.shared.fetchGeolocationRx(query: searchText)
+        geolocationService.fetchGeolocationRx(query: searchText)
             .map{ [weak self] addressList -> [SearchedRegion] in
                 guard let weakSelf = self else { return [] }
                 
@@ -102,42 +144,42 @@ final class SearchViewModel {
                 }
                 return searchedRegionList
             }
-            .take(1)
-            .subscribe(onNext: { [weak self] searchedRegionList in
-                guard let weakSelf = self else { return }
-                weakSelf.searchDataSectionListRelay.accept([
+            .map { searchedRegionList -> [SearchDataSection] in
+                return [
                     SearchDataSection(items: searchedRegionList)
-                ])
-            })
+                ]
+            }
+            .bind(to: searchDataSectionListRelay)
+            .disposed(by: dispostBag)
     }
     
     func getWeatherForecastInfosOfSelectedRegion(latitude: Double, longitude: Double) {
         let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
         
         Observable.combineLatest(
-            DailyWeatherForecastService.shared.fetchDailyWeatherForecastInfosRx(
+            dailyWeatherForecastService.fetchDailyWeatherForecastInfosRx(
                 nx: convertedXY.x,
                 ny: convertedXY.y,
                 base_time: Date().getDateOfSelectedRegion.getBaseDateAndTimeForDailyWeatherForecast.baseTime
-            ), RealtimeForcastService.shared.fetchRealtimeForecastsRx(
+            ), realtimeForcastService.fetchRealtimeForecastsRx(
                 nx: convertedXY.x,
                 ny: convertedXY.y
             )
-        ) { dwfItems, items -> InfoWindowContents in
+        ) { dwfItems, items -> String in
             let lowAndHighTempForToday = dwfItems.getHighAndLowTemperatureForToday(baseDate: Date().getBaseDateAndTimeForDailyWeatherForecast.baseDate)
             let currentWeatherCondition = items.getCurrentWeatherConditionInfos()
-            return InfoWindowContents(
+            
+            let infoWindowContents = InfoWindowContents(
                 highestTemperature: lowAndHighTempForToday.highestTemp,
                 lowestTemperature: lowAndHighTempForToday.lowestTemp,
                 currentWeatherCondition: currentWeatherCondition
             )
-        }
-        .take(1)
-        .subscribe(onNext: { [weak self] infoWindowContents in
-            guard let weakSelf = self else { return }
+            
             let contents = "현재: \(infoWindowContents.currentWeatherCondition.temperature)° / 최저(일): \(infoWindowContents.lowestTemperature)° / 최고(일): \(infoWindowContents.highestTemperature)°"
-            weakSelf.infoWindowContentsRelay.accept(contents)
-        })
+            return contents
+        }
+        .bind(to: infoWindowContentsRelay)
+        .disposed(by: dispostBag)
     }
 }
 
@@ -155,5 +197,12 @@ extension SearchViewModel {
             }
             return "최근 검색"
         }
+    }
+}
+
+// MARK: - Realm 관련 메소드
+extension SearchViewModel {
+    func updateRecentlySearchedAddressList(selectedAddress: Address){
+        recentlySearchedAddressService.addNewlySearchedAddress(newAddress: selectedAddress)
     }
 }

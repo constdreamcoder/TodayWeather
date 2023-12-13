@@ -17,7 +17,7 @@ final class SearchViewController: UIViewController {
     
     // TODO: - 추후 ViewModel로 이동시키기
     var mapView: NMFMapView?
-    var locationManager: CLLocationManager = HomeViewModel.shared.locationManager
+//    var locationManager: CLLocationManager = HomeViewModel.shared.locationManager
     var marker = NMFMarker()
     var currentLocationOfUser: NMGLatLng?
     var searchedLocation: NMGLatLng?
@@ -70,20 +70,39 @@ final class SearchViewController: UIViewController {
     
     private var searchTableViewDataSource: RxTableViewSectionedReloadDataSource<SearchDataSection>!
     
+    private var searchViewModel: SearchViewModel
+    private var detailViewModel: DetailViewModel
+    
+    private lazy var input = SearchViewModel.Input()
+    private lazy var output = searchViewModel.transform(input: input)
+    
     private var disposeBag = DisposeBag()
+    
+    init(
+        searchViewModel: SearchViewModel,
+        detailViewModel: DetailViewModel
+    ) {
+        self.searchViewModel = searchViewModel
+        self.detailViewModel = detailViewModel
+        
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         configure()
-        setLocationManager()
         updateViews()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        SearchViewModel.shared.isSearchMode = false
+        searchViewModel.isSearchMode = false
     }
 }
 
@@ -122,14 +141,6 @@ private extension SearchViewController {
             $0.width.height.equalTo(48.0)
             $0.trailing.bottom.equalToSuperview().inset(36.0)
         }
-        
-        SearchViewModel.shared.userLocationRelay
-            .subscribe { [weak self] userLocation in
-                guard let weakSelf = self else { return }
-                weakSelf.currentLocationOfUser = NMGLatLng(lat: userLocation[0], lng: userLocation[1])
-                weakSelf.setupMarkerForCurrentLocationOfUser()
-            }
-            .disposed(by: disposeBag)
     }
     
     func setupNavigationBar() {
@@ -145,9 +156,17 @@ private extension SearchViewController {
     }
     
     func updateViews() {
-        searchTableViewDataSource = SearchViewModel.shared.configureTableViewDataSource()
-        SearchViewModel.shared.searchDataSectionListRelay
-            .bind(to: searchTableView.rx.items(dataSource: searchTableViewDataSource))
+        output.userLocation
+            .drive(onNext: { [weak self] userLocation in
+                guard let weakSelf = self else { return }
+                weakSelf.currentLocationOfUser = NMGLatLng(lat: userLocation.lat, lng: userLocation.lng)
+                weakSelf.setupMarkerForCurrentLocationOfUser()
+            })
+            .disposed(by: disposeBag)
+        
+        searchTableViewDataSource = searchViewModel.configureTableViewDataSource()
+        output.searchDataSectionList
+            .drive(searchTableView.rx.items(dataSource: searchTableViewDataSource))
             .disposed(by: disposeBag)
     }
 }
@@ -176,17 +195,18 @@ extension SearchViewController: UITableViewDelegate {
     
     // TODO: - SearchViewModel로 옮기기
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedAddress = SearchViewModel.shared.searchDataSectionListRelay.value[0].items[indexPath.row].address
+        
+        let selectedAddress = output.searchDataSectionListRelay.value[0].items[indexPath.row].address
         guard let longitude = Double(selectedAddress.x),
               let latitude = Double(selectedAddress.y)
         else { return }
         
-        SearchViewModel.shared.getWeatherForecastInfosOfSelectedRegion(latitude: latitude, longitude: longitude)
-        
+        searchViewModel.getWeatherForecastInfosOfSelectedRegion(latitude: latitude, longitude: longitude)            
+
         showInfoWindowOnMarker(latitude: latitude, longitude: longitude, address: selectedAddress.roadAddress)
         
         showTableView(isHidden: true)
-        RecentlySearchedAddressService.shared.addNewlySearchedAddress(newAddress: selectedAddress)
+        searchViewModel.updateRecentlySearchedAddressList(selectedAddress: selectedAddress)
         
         searchBar.resignFirstResponder()
     }
@@ -197,19 +217,19 @@ extension SearchViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         showTableView(isHidden: false)
         if searchBar.text != "" {
-            SearchViewModel.shared.isSearchMode = true
-            SearchViewModel.shared.searchAddressList()
+            searchViewModel.isSearchMode = true
+            searchViewModel.searchAddressList()
         } else if searchBar.text == "" {
-            SearchViewModel.shared.isSearchMode = false
-            SearchViewModel.shared.getRecentlySearchedResultList()
+            searchViewModel.isSearchMode = false
+            searchViewModel.getRecentlySearchedResultList()
         }
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        SearchViewModel.shared.searchText = searchText
-        SearchViewModel.shared.isSearchMode = false
+        searchViewModel.searchText = searchText
+        searchViewModel.isSearchMode = false
         if searchText == "" {
-            SearchViewModel.shared.getRecentlySearchedResultList()
+            searchViewModel.getRecentlySearchedResultList()
         }
     }
     
@@ -219,17 +239,10 @@ extension SearchViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if searchBar.text != "" {
-            SearchViewModel.shared.isSearchMode = true
-            SearchViewModel.shared.searchAddressList()
+            searchViewModel.isSearchMode = true
+            searchViewModel.searchAddressList()
             searchBar.resignFirstResponder()
         }
-    }
-}
-
-// MARK: - 사용자 위치 관련 메소드
-extension SearchViewController {
-    func setLocationManager() {
-        locationManager.delegate = HomeViewModel.shared
     }
 }
 
@@ -279,10 +292,10 @@ private extension SearchViewController {
         infoWindow = NMFInfoWindow()
         
         // 터치 이벤트 추가
-        let handler = { [weak self,latitude, longitude] (overlay: NMFOverlay) -> Bool in
+        let handler = { [weak self] (overlay: NMFOverlay) -> Bool in
             guard let weakSelf = self else { return false }
             if let infoWindow = overlay as? NMFInfoWindow {
-                let detailVC = DetailViewController()
+                let detailVC = DetailViewController(detailViewModel: weakSelf.detailViewModel)
                 weakSelf.navigationController?.pushViewController(detailVC, animated: true)
             }
             return true
@@ -291,27 +304,30 @@ private extension SearchViewController {
         
         let dataSource = NMFInfoWindowDefaultTextSource.data()
         
+        DispatchQueue.global().async { [weak self] in
+            guard let weakSelf = self else { return }
+            // 오늘 예보 및 내일 예보 데이터 호출
+            let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
+            weakSelf.detailViewModel.setupTodayWeatherList(nx: convertedXY.x, ny: convertedXY.y)
+            weakSelf.detailViewModel.setupNextForecastList(regIdForTemp: "21F20801", regIdForSky: "11D20000", latitude: latitude, longitude: longitude)
+        }
+       
         // TODO: - 성능 개선하기
-        SearchViewModel.shared.infoWindowContentsRelay
-            .take(1)
-            .subscribe(onNext: { [weak self, dataSource] title in
+        output.infoWindowContents
+            .drive(onNext: { [weak self, dataSource, latitude, longitude, address] title in
                 guard let weakSelf = self else { return }
-                
-                // 오늘 예보 및 내일 예보 데이터 호출
-                DetailViewModel.shared.reSetupTodayWeatherForecastList(latitude: latitude, longitude: longitude)
-                DetailViewModel.shared.setupNextForecastList(regIdForTemp: "21F20801", regIdForSky: "11D20000", latitude: latitude, longitude: longitude)
                 
                 // 마커 표시를 위한 설정
                 weakSelf.setupMarkerOnMap(latitude: latitude, longitude: longitude)
                 dataSource.title = title
                 weakSelf.infoWindow?.dataSource = dataSource
                 weakSelf.infoWindow?.open(with: weakSelf.marker)
-            }, onCompleted: { [weak self, latitude, longitude, address] in
-                guard let weakSelf = self else { return }
+                
                 weakSelf.searchBar.text = address
-                SearchViewModel.shared.searchText = address
+                weakSelf.searchViewModel.searchText = address
                 weakSelf.updateCamera(latitude: latitude, longitude: longitude)
                 weakSelf.resetCameraUpdate()
+                print("drive")
             })
             .disposed(by: disposeBag)
     }
