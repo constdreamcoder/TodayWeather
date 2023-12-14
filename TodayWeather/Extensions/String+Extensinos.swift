@@ -32,4 +32,16 @@ extension String {
             return .clear
         }
     }
+    
+    func hasCommonSubstring(_ str: String) -> Bool {
+        // 문자열을 각 문자로 분해
+        let set1 = Set(self)
+        let set2 = Set(str)
+        
+        // 교집합을 구하고 공통된 문자가 있는지 확인
+        let commonSet = set1.intersection(set2)
+        
+        return !commonSet.isEmpty
+    }
+
 }

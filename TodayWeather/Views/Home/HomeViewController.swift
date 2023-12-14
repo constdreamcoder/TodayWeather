@@ -56,7 +56,7 @@ final class HomeViewController: UIViewController {
     private var homeViewModel: HomeViewModel
     private var detailViewModel: DetailViewModel?
     private lazy var input = HomeViewModel.Input(
-        goToNMapTapped: searchLocationButton.rx.tap.asDriver(), 
+        goToNMapTapped: searchLocationButton.rx.tap.asDriver(),
         goToDetailVCTapped: forecastReportButton.rx.tap.asDriver()
     )
     private lazy var output = homeViewModel.transform(input: input)
@@ -91,17 +91,18 @@ final class HomeViewController: UIViewController {
         
         output.triggerForecastReportAPIs
             .observe(on: ConcurrentDispatchQueueScheduler(queue: .global()))
-            .bind { [weak self] userLocation in
+            .bind(onNext: { [weak self] userLocation, koreanFullAdress in
                 guard let weakSelf = self else { return }
                 weakSelf.detailViewModel = nil
                 weakSelf.detailViewModel = DetailViewModel(
                     realtimeForcastService: RealtimeForcastService(),
                     dailyWeatherForecastService: DailyWeatherForecastService(),
                     temperatureForecastService: TemperatureForecastService(),
-                    skyConditionForecastService: SkyConditionForecastService(),
-                    userLocation: userLocation
+                    skyConditionForecastService: SkyConditionForecastService(), regionCodeSearchingService: RegionCodeSearchingService(),
+                    userLocation: userLocation, 
+                    koreanFullAdress: koreanFullAdress
                 )
-            }
+            })
             .disposed(by: disposeBag)
     }
 }
@@ -109,7 +110,7 @@ final class HomeViewController: UIViewController {
 private extension HomeViewController {
     func setupNavigationBar() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "bell")?.withTintColor(.white, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(gotoNotifications))
-                
+        
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchLocationButton)
     }
     
@@ -181,7 +182,7 @@ private extension HomeViewController {
     }
     
     @objc func gotoSearchLocations() {
-       
+        
     }
 }
 

@@ -195,18 +195,20 @@ extension SearchViewController: UITableViewDelegate {
     
     // TODO: - SearchViewModel로 옮기기
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        let selectedAddress = output.searchDataSectionListRelay.value[0].items[indexPath.row].address
+        let selectedItem = output.searchDataSectionListRelay.value[0].items[indexPath.row]
+        let addressForSearchNextForecast = selectedItem.addressForSearchNextForecast
+        let selectedAddress = selectedItem.address
+ 
         guard let longitude = Double(selectedAddress.x),
               let latitude = Double(selectedAddress.y)
         else { return }
-        
+    
         searchViewModel.getWeatherForecastInfosOfSelectedRegion(latitude: latitude, longitude: longitude)            
 
-        showInfoWindowOnMarker(latitude: latitude, longitude: longitude, address: selectedAddress.roadAddress)
+        showInfoWindowOnMarker(latitude: latitude, longitude: longitude, address: selectedAddress, addressForSearchNextForecast: addressForSearchNextForecast)
         
         showTableView(isHidden: true)
-        searchViewModel.updateRecentlySearchedAddressList(selectedAddress: selectedAddress)
+        searchViewModel.updateRecentlySearchedAddressList(selectedAddress: selectedAddress, addressForSearchNextForecast: addressForSearchNextForecast)
         
         searchBar.resignFirstResponder()
     }
@@ -285,7 +287,7 @@ private extension SearchViewController {
     }
     
     // 정보창 표시
-    func showInfoWindowOnMarker(latitude: Double, longitude: Double, address: String) {
+    func showInfoWindowOnMarker(latitude: Double, longitude: Double, address: Address, addressForSearchNextForecast: String) {
         
         resetInfoView()
         
@@ -304,12 +306,23 @@ private extension SearchViewController {
         
         let dataSource = NMFInfoWindowDefaultTextSource.data()
         
-        DispatchQueue.global().async { [weak self] in
+        DispatchQueue.global().async { [weak self, address] in
             guard let weakSelf = self else { return }
             // 오늘 예보 및 내일 예보 데이터 호출
             let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
             weakSelf.detailViewModel.setupTodayWeatherList(nx: convertedXY.x, ny: convertedXY.y)
-            weakSelf.detailViewModel.setupNextForecastList(regIdForTemp: "21F20801", regIdForSky: "11D20000", latitude: latitude, longitude: longitude)
+            
+            print("address: \(address.roadAddress)")
+            var koreanFullAdress: String = ""
+            if address.addressElements.isEmpty {
+                // 최근 검색을 조회하는 경우
+                koreanFullAdress = addressForSearchNextForecast
+            } else {
+                // 주소로 검색한 경우
+                koreanFullAdress = address.addressElements[0].shortName + " " + address.addressElements[1].shortName
+            }
+            print("koreanFullAdress: \(koreanFullAdress)")
+            weakSelf.detailViewModel.setupNextForecastList(koreanFullAdress: addressForSearchNextForecast, latitude: latitude, longitude: longitude)
         }
        
         // TODO: - 성능 개선하기
@@ -323,8 +336,8 @@ private extension SearchViewController {
                 weakSelf.infoWindow?.dataSource = dataSource
                 weakSelf.infoWindow?.open(with: weakSelf.marker)
                 
-                weakSelf.searchBar.text = address
-                weakSelf.searchViewModel.searchText = address
+                weakSelf.searchBar.text = address.roadAddress
+                weakSelf.searchViewModel.searchText = address.roadAddress
                 weakSelf.updateCamera(latitude: latitude, longitude: longitude)
                 weakSelf.resetCameraUpdate()
                 print("drive")

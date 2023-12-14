@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>RegName</key>
+		<string>서울, 인천, 경기도</string>
+		<key>RegId</key>
+		<string>11B00000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>강원도 영서</string>
+		<key>RegId</key>
+		<string>11D10000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>강원도 영동</string>
+		<key>RegId</key>
+		<string>11D20000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>대전, 세종, 충청남도</string>
+		<key>RegId</key>
+		<string>11C20000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>충청북도</string>
+		<key>RegId</key>
+		<string>11C10000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>광주, 전라남도</string>
+		<key>RegId</key>
+		<string>11F20000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>전라북도</string>
+		<key>RegId</key>
+		<string>11F10000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>대구, 경상북도</string>
+		<key>RegId</key>
+		<string>11H10000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>부산, 울산, 경상남도</string>
+		<key>RegId</key>
+		<string>11H20000</string>
+	</dict>
+	<dict>
+		<key>RegName</key>
+		<string>제주도</string>
+		<key>RegId</key>
+		<string>11G00000</string>
+	</dict>
+</array>
+</plist>

@@ -109,6 +109,7 @@ final class SearchViewModel: ViewModelType {
                         )
                         let searchedRegion = SearchedRegion(
                             address: address,
+                            addressForSearchNextForecast: recentlySearchedAddressModel.addressForSearchNextForecast,
                             lowestTemperatureForToday: 0,
                             highestTemperatureForToday: 0,
                             isSearchMode: weakSelf._isSearchMode
@@ -134,8 +135,11 @@ final class SearchViewModel: ViewModelType {
                 
                 var searchedRegionList: [SearchedRegion] = []
                 addressList.forEach { address in
+                    let siDo = address.addressElements[0].shortName
+                    let siGuGun = address.addressElements[1].shortName
                     let searchedRegion = SearchedRegion(
-                        address: address,
+                        address: address, 
+                        addressForSearchNextForecast: siDo + " " + siGuGun,
                         lowestTemperatureForToday: 0,
                         highestTemperatureForToday: 0,
                         isSearchMode: weakSelf._isSearchMode
@@ -202,7 +206,7 @@ extension SearchViewModel {
 
 // MARK: - Realm 관련 메소드
 extension SearchViewModel {
-    func updateRecentlySearchedAddressList(selectedAddress: Address){
-        recentlySearchedAddressService.addNewlySearchedAddress(newAddress: selectedAddress)
+    func updateRecentlySearchedAddressList(selectedAddress: Address, addressForSearchNextForecast: String){
+        recentlySearchedAddressService.addNewlySearchedAddress(newAddress: selectedAddress, addressForSearchNextForecast: addressForSearchNextForecast)
     }
 }

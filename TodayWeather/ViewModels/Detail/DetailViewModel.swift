@@ -41,6 +41,7 @@ final class DetailViewModel: ViewModelType {
     private let dailyWeatherForecastService: DailyWeatherForecastService
     private let temperatureForecastService: TemperatureForecastService
     private let skyConditionForecastService: SkyConditionForecastService
+    private let regionCodeSearchingService: RegionCodeSearchingService
     
     private var todayWeatherDataSectionListRelay = BehaviorRelay<[TodayWeatherDataSection]>(value: [])
     private var nextForecastListRelay = BehaviorRelay<[NextForecastItem]>(value: [])
@@ -54,17 +55,20 @@ final class DetailViewModel: ViewModelType {
         dailyWeatherForecastService: DailyWeatherForecastService,
         temperatureForecastService: TemperatureForecastService,
         skyConditionForecastService: SkyConditionForecastService,
-        userLocation: ConvertXY.LatXLngY
+        regionCodeSearchingService: RegionCodeSearchingService,
+        userLocation: ConvertXY.LatXLngY,
+        koreanFullAdress: String
     ) {
         self.realtimeForcastService = realtimeForcastService
         self.dailyWeatherForecastService = dailyWeatherForecastService
         self.temperatureForecastService = temperatureForecastService
         self.skyConditionForecastService = skyConditionForecastService
+        self.regionCodeSearchingService = regionCodeSearchingService
         
         self.userLocation = userLocation
     
         setupTodayWeatherList(nx: userLocation.x, ny: userLocation.y)
-        setupNextForecastList(regIdForTemp: "11B10101", regIdForSky: "11B00000", latitude: userLocation.lat ,longitude: userLocation.lng)
+        setupNextForecastList(koreanFullAdress: koreanFullAdress, latitude: userLocation.lat ,longitude: userLocation.lng)        
     }
 }
 
@@ -102,11 +106,14 @@ extension DetailViewModel {
 // MARK: - 다음 예보 관련 메소드
 extension DetailViewModel {
     // TODO: - 아래 메소드 사용 위치별 latitude, longitude 사용 여부 처리하기
-    func setupNextForecastList(regIdForTemp: String, regIdForSky: String, latitude: Double = 0.0, longitude: Double = 0.0) {
+    func setupNextForecastList(koreanFullAdress: String = "", latitude: Double = 0.0, longitude: Double = 0.0) {
         
-        guard latitude > 0.0 && longitude > 0.0 else { return }
+        guard koreanFullAdress != "" && latitude > 0.0 && longitude > 0.0 else { return }
+        
+        let regIdForTemp = regionCodeSearchingService.searchRegionCodeForTemperature(koreanFullAdress: koreanFullAdress)
+        let regIdForSky = regionCodeSearchingService.searchRegionCodeForSkyCondition(koreanFullAdress: koreanFullAdress)
+        
         let now = Date()
-        
         let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
                 
         Observable.combineLatest(

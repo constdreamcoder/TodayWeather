@@ -38,6 +38,10 @@ struct Region: Codable {
 }
 
 extension Region {
+    func getFullAdress() -> String {
+        return "\(area1.name) \(area2.name) \(area3.name)"
+    }
+    
     func getAddress() -> String {
         return "\(area2.name) \(area3.name)"
     }

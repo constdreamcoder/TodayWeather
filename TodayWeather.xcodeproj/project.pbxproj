@@ -9,8 +9,11 @@
 /* Begin PBXBuildFile section */
 		00078C6C2B0F12930035A466 /* TodayWeatherCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00078C6B2B0F12930035A466 /* TodayWeatherCollectionView.swift */; };
 		00078C6F2B0F1B180035A466 /* TodayWeatherDetailCollectionViewHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00078C6E2B0F1B180035A466 /* TodayWeatherDetailCollectionViewHeaderView.swift */; };
+		002DEB432B29AC88004C114F /* RegIdForSky.plist in Resources */ = {isa = PBXBuildFile; fileRef = 002DEB422B29AC88004C114F /* RegIdForSky.plist */; };
+		002DEB452B29F4FD004C114F /* RegionCodeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 002DEB442B29F4FD004C114F /* RegionCodeModel.swift */; };
+		002DEB472B29F799004C114F /* RegionCodeSearchingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 002DEB462B29F799004C114F /* RegionCodeSearchingService.swift */; };
 		003084BC2B16EF2000D7A22D /* TodayWeatherDataSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003084BB2B16EF2000D7A22D /* TodayWeatherDataSection.swift */; };
-		003084C02B170A5700D7A22D /* Property List.plist in Resources */ = {isa = PBXBuildFile; fileRef = 003084BF2B170A5700D7A22D /* Property List.plist */; };
+		003084C02B170A5700D7A22D /* RegIdForTemp.plist in Resources */ = {isa = PBXBuildFile; fileRef = 003084BF2B170A5700D7A22D /* RegIdForTemp.plist */; };
 		003084C22B170BEA00D7A22D /* TemperatureForecastService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003084C12B170BEA00D7A22D /* TemperatureForecastService.swift */; };
 		003084C52B170DA300D7A22D /* TemperatureForecastRequestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003084C42B170DA300D7A22D /* TemperatureForecastRequestModel.swift */; };
 		003084C72B170F3A00D7A22D /* TemperatureForecastResponseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003084C62B170F3A00D7A22D /* TemperatureForecastResponseModel.swift */; };
@@ -102,8 +105,11 @@
 /* Begin PBXFileReference section */
 		00078C6B2B0F12930035A466 /* TodayWeatherCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWeatherCollectionView.swift; sourceTree = "<group>"; };
 		00078C6E2B0F1B180035A466 /* TodayWeatherDetailCollectionViewHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWeatherDetailCollectionViewHeaderView.swift; sourceTree = "<group>"; };
+		002DEB422B29AC88004C114F /* RegIdForSky.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = RegIdForSky.plist; sourceTree = "<group>"; };
+		002DEB442B29F4FD004C114F /* RegionCodeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodeModel.swift; sourceTree = "<group>"; };
+		002DEB462B29F799004C114F /* RegionCodeSearchingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodeSearchingService.swift; sourceTree = "<group>"; };
 		003084BB2B16EF2000D7A22D /* TodayWeatherDataSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWeatherDataSection.swift; sourceTree = "<group>"; };
-		003084BF2B170A5700D7A22D /* Property List.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Property List.plist"; sourceTree = "<group>"; };
+		003084BF2B170A5700D7A22D /* RegIdForTemp.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = RegIdForTemp.plist; sourceTree = "<group>"; };
 		003084C12B170BEA00D7A22D /* TemperatureForecastService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureForecastService.swift; sourceTree = "<group>"; };
 		003084C42B170DA300D7A22D /* TemperatureForecastRequestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureForecastRequestModel.swift; sourceTree = "<group>"; };
 		003084C62B170F3A00D7A22D /* TemperatureForecastResponseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureForecastResponseModel.swift; sourceTree = "<group>"; };
@@ -236,7 +242,8 @@
 			children = (
 				007C6F8C2B0B8F4F0035BD38 /* Assets.xcassets */,
 				007C6F8E2B0B8F4F0035BD38 /* LaunchScreen.storyboard */,
-				003084BF2B170A5700D7A22D /* Property List.plist */,
+				003084BF2B170A5700D7A22D /* RegIdForTemp.plist */,
+				002DEB422B29AC88004C114F /* RegIdForSky.plist */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -248,6 +255,7 @@
 				003084C62B170F3A00D7A22D /* TemperatureForecastResponseModel.swift */,
 				0031E97A2B1839FD00259EC2 /* SkyConditionForecastRequestModel.swift */,
 				0031E97C2B183A7600259EC2 /* SkyConditionResponseModel.swift */,
+				002DEB442B29F4FD004C114F /* RegionCodeModel.swift */,
 			);
 			path = Detail;
 			sourceTree = "<group>";
@@ -308,6 +316,7 @@
 			isa = PBXGroup;
 			children = (
 				007B16242B1AF34A00E284AA /* RecentlySearchedAddressService.swift */,
+				002DEB462B29F799004C114F /* RegionCodeSearchingService.swift */,
 			);
 			path = InMemoryServices;
 			sourceTree = "<group>";
@@ -661,7 +670,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				003084C02B170A5700D7A22D /* Property List.plist in Resources */,
+				002DEB432B29AC88004C114F /* RegIdForSky.plist in Resources */,
+				003084C02B170A5700D7A22D /* RegIdForTemp.plist in Resources */,
 				007C6F902B0B8F4F0035BD38 /* LaunchScreen.storyboard in Resources */,
 				007C6F8D2B0B8F4F0035BD38 /* Assets.xcassets in Resources */,
 			);
@@ -802,6 +812,7 @@
 				007C6FBC2B0BA1640035BD38 /* Colors.swift in Sources */,
 				007C0A5E2B0C5BB9007A4591 /* WeatherConditionCustomStackView.swift in Sources */,
 				00EAC3732B1189A400230842 /* SearchViewController.swift in Sources */,
+				002DEB452B29F4FD004C114F /* RegionCodeModel.swift in Sources */,
 				007B16252B1AF34A00E284AA /* RecentlySearchedAddressService.swift in Sources */,
 				003084C52B170DA300D7A22D /* TemperatureForecastRequestModel.swift in Sources */,
 				007C0A5A2B0C5823007A4591 /* Assets.swift in Sources */,
@@ -824,6 +835,7 @@
 				003447CD2B1C3D2C00B1D24F /* DailyWeatherForecastRequestModel.swift in Sources */,
 				00A2B6AA2B0F596200ACF23A /* NextForecastTableViewCell.swift in Sources */,
 				00E773372B14949400684566 /* RealtimeForecastRequestModel.swift in Sources */,
+				002DEB472B29F799004C114F /* RegionCodeSearchingService.swift in Sources */,
 				00BD3B3E2B21E96300D66DEC /* ViewModelType.swift in Sources */,
 				00078C6F2B0F1B180035A466 /* TodayWeatherDetailCollectionViewHeaderView.swift in Sources */,
 				0050356E2B15C0F800F8B7F2 /* KoreanAddressService.swift in Sources */,

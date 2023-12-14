@@ -9,6 +9,7 @@ import Foundation
 
 struct SearchedRegion {
     var address: Address
+    var addressForSearchNextForecast: String
     var lowestTemperatureForToday: Int
     var highestTemperatureForToday: Int
     var isSearchMode: Bool

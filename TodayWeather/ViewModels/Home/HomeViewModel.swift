@@ -29,7 +29,7 @@ final class HomeViewModel: NSObject, ViewModelType {
         let gotoSearchVC: Driver<Void>
         let goToDetailVC: Driver<Void>
         let triggerForecastReportAPIs: BehaviorRelay
-        <ConvertXY.LatXLngY>
+        <(userLocation:ConvertXY.LatXLngY, koreanFullAdress: String)>
     }
     
     func transform(input: Input) -> Output {
@@ -50,7 +50,7 @@ final class HomeViewModel: NSObject, ViewModelType {
             currentAddressOfLocation: currentAddressOfLocation, 
             gotoSearchVC: gotoSearchVC,
             goToDetailVC: goToDetailVC, 
-            triggerForecastReportAPIs: userLocationRelay
+            triggerForecastReportAPIs: triggerForecastReportAPIs
         )
     }
     
@@ -63,7 +63,7 @@ final class HomeViewModel: NSObject, ViewModelType {
     private var currentWeatherConditionRelay = BehaviorRelay<WeatherConditionOfCurrentLocation>(value: WeatherConditionOfCurrentLocation())
     private var currentAddressOfLocationRelay = BehaviorRelay<String>(value: "")
     private var userLocationRelay = BehaviorRelay
-    <ConvertXY.LatXLngY>(value: ConvertXY.LatXLngY())
+    <(userLocation:ConvertXY.LatXLngY, koreanFullAdress: String)>(value: (userLocation: ConvertXY.LatXLngY(), koreanFullAdress: ""))
     
     private var dispostBag = DisposeBag()
 
@@ -122,18 +122,15 @@ extension HomeViewModel: CLLocationManagerDelegate {
             
             koreanAddressService.convertLatAndLngToKoreanAddressRx(latitude: userLocation!.lat, longitude: userLocation!.lng)
                 .observe(on: ConcurrentDispatchQueueScheduler(queue: .global()))
-                .map { region in
+                .map { [weak self] region -> String in
+                    guard let weakSelf = self else { return "" }
+                    weakSelf.userLocationRelay.accept((weakSelf.userLocation!, region.getFullAdress()))
                     return region.getAddress()
                 }
                 .bind(to: currentAddressOfLocationRelay)
                 .disposed(by: dispostBag)
             
-            let uLocation = ConvertXY().convertGRID_GPS(
-                mode: .TO_GRID,
-                lat_X: location.coordinate.latitude,
-                lng_Y: location.coordinate.longitude
-            )
-            userLocationRelay.accept(uLocation)
+            
         }
     }
     

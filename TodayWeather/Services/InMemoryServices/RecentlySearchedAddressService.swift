@@ -16,9 +16,22 @@ final class RecentlySearchedAddressService {
     }
     
     // Create
-    func addNewlySearchedAddress(newAddress: Address) {
+    func addNewlySearchedAddress(newAddress: Address, addressForSearchNextForecast: String) {
+        var temp: String = ""
+        
+        if newAddress.addressElements.isEmpty {
+            // 최근 검색을 조회하는 경우
+            temp = addressForSearchNextForecast
+        } else {
+            // 주소로 검색한 경우
+            let siDo = newAddress.addressElements[0].shortName
+            let siGuGun = newAddress.addressElements[1].shortName
+            temp = siDo + " " + siGuGun
+        }
+        
         let newAddressModel = RecentlySearchedAddressModel(
             address: newAddress.roadAddress,
+            addressForSearchNextForecast: temp,
             longitude: newAddress.x,
             latitude: newAddress.y
         )
