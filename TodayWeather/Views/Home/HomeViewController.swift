@@ -62,14 +62,10 @@ final class HomeViewController: UIViewController {
     private lazy var output = homeViewModel.transform(input: input)
     private var disposeBag = DisposeBag()
     
-    init() {
-        homeViewModel = HomeViewModel(
-            realtimeForcastService: RealtimeForcastService(),
-            koreanAddressService: KoreanAddressService(),
-            locationManager: CLLocationManager()
-        )
+    init(homeViewModel: HomeViewModel) {
+        self.homeViewModel = homeViewModel
         super.init(nibName: nil, bundle: nil)
-        homeViewModel.delegate = self
+        self.homeViewModel.delegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -90,16 +86,18 @@ final class HomeViewController: UIViewController {
         super.viewWillAppear(animated)
         
         output.triggerForecastReportAPIs
-            .observe(on: ConcurrentDispatchQueueScheduler(queue: .global()))
             .bind(onNext: { [weak self] userLocation, koreanFullAdress in
                 guard let weakSelf = self else { return }
+                guard userLocation.x > 0 && userLocation.y > 0,
+                      koreanFullAdress != "" else { return }
+                
                 weakSelf.detailViewModel = nil
                 weakSelf.detailViewModel = DetailViewModel(
-                    realtimeForcastService: RealtimeForcastService(),
+                    realtimeForcastService: RealtimeForecastService(),
                     dailyWeatherForecastService: DailyWeatherForecastService(),
                     temperatureForecastService: TemperatureForecastService(),
-                    skyConditionForecastService: SkyConditionForecastService(), regionCodeSearchingService: RegionCodeSearchingService(),
-                    userLocation: userLocation, 
+                    skyConditionForecastService: SkyConditionForecastService(), regionCodeSearchingService: RegionCodeSearchingService(), 
+                    userLocation: userLocation,
                     koreanFullAdress: koreanFullAdress
                 )
             })
@@ -109,7 +107,7 @@ final class HomeViewController: UIViewController {
 
 private extension HomeViewController {
     func setupNavigationBar() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "bell")?.withTintColor(.white, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(gotoNotifications))
+//        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "bell")?.withTintColor(.white, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(gotoNotifications))
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchLocationButton)
     }
@@ -145,7 +143,7 @@ private extension HomeViewController {
             .drive(searchLocationButton.rx.title(for: .normal))
             .disposed(by: disposeBag)
         
-        output.gotoSearchVC
+        output.goToSearchVC
             .drive()
             .disposed(by: disposeBag)
         
@@ -194,7 +192,7 @@ extension HomeViewController: HomeNavigator {
         let searchViewModel = SearchViewModel(
             geolocationService: GeolocationService(),
             dailyWeatherForecastService: DailyWeatherForecastService(),
-            realtimeForcastService: RealtimeForcastService(),
+            realtimeForcastService: RealtimeForecastService(),
             recentlySearchedAddressService: RecentlySearchedAddressService(),
             userLocation: userLocation
         )

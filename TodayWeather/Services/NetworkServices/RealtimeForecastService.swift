@@ -1,5 +1,5 @@
 //
-//  RealtimeForcastService.swift
+//  RealtimeForecastService.swift
 //  TodayWeather
 //
 //  Created by SUCHAN CHANG on 2023/11/27.
@@ -9,7 +9,11 @@ import Alamofire
 import RxSwift
 import Foundation
 
-final class RealtimeForcastService {
+protocol RealtimeForecastServiceModel {
+    func fetchRealtimeForecastsRx(nx: Int, ny: Int) -> Observable<Items>
+}
+
+final class RealtimeForecastService: RealtimeForecastServiceModel {
     private let SERVICE_KEY = "tXma2V1mtyxRBkl0cL0LCpal1tBAJhM3WvCQHZf%2BP1LRscz8vEP1DYfPxnNb1cMmUjMc3bEsv8YHRkdNoA67YQ%3D%3D"
     
     init() {}
@@ -40,7 +44,7 @@ final class RealtimeForcastService {
     }
 }
 
-private extension RealtimeForcastService {
+private extension RealtimeForecastService {
     func fetchRealtimeForecasts(
         base_date: String,
         base_time: String,

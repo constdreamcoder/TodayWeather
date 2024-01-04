@@ -9,7 +9,11 @@ import Alamofire
 import RxSwift
 import Foundation
 
-final class KoreanAddressService {
+protocol KoreanAddressServiceModel {
+    func convertLatAndLngToKoreanAddressRx(latitude: Double, longitude: Double) -> Observable<Region>
+}
+
+final class KoreanAddressService: KoreanAddressServiceModel {
     private let CLIENT_ID = "06aiesyl8c"
     private let CLIENT_SECRET = "nk2aD2cIqm1JJ4ZLar1xWNRcH1hPjL7Q8aKlE21V"
     

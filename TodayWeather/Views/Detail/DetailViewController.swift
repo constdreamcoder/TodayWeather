@@ -24,7 +24,7 @@ final class DetailViewController: UIViewController {
         // TODO: 사용자가 터치 시 색깔 정하기
         button.setTitleColor(.clear, for: .highlighted)
         button.titleLabel?.font = .systemFont(ofSize: 23.0)
-        button.addTarget(self, action: #selector(goBack), for: .touchUpInside)
+//        button.addTarget(self, action: #selector(goBack), for: .touchUpInside)
         return button
     }()
     
@@ -49,14 +49,17 @@ final class DetailViewController: UIViewController {
     }()
     
     private var detailViewModel: DetailViewModel
-    private lazy var input = DetailViewModel.Input()
+    private lazy var input = DetailViewModel.Input(
+        goBackBtnTapped: searchLocationButton.rx.tap.asDriver()
+    )
     private lazy var output = detailViewModel.transform(input: input)
     
     private var disposeBag = DisposeBag()
-    
+        
     init(detailViewModel: DetailViewModel) {
         self.detailViewModel = detailViewModel
         super.init(nibName: nil, bundle: nil)
+        self.detailViewModel.delegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -72,12 +75,13 @@ final class DetailViewController: UIViewController {
         setupSubViews()
         
         updateViews()
+        setupUserEvent()
     }
 }
 
 private extension DetailViewController {
     func setupNavigationBar() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: Assets.settingsIcon)?.withTintColor(.white, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(gotoSettings))
+//        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: Assets.settingsIcon)?.withTintColor(.white, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(gotoSettings))
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchLocationButton)
     }
@@ -122,15 +126,22 @@ private extension DetailViewController {
             }
             .disposed(by: disposeBag)
     }
+    
+    func setupUserEvent() {
+        // 뒤로가기
+        output.goBack
+            .drive()
+            .disposed(by: disposeBag)
+    }
 }
 
 // MARK: - 이벤트 관련 메소드
-private extension DetailViewController {
-    @objc func gotoSettings() {
+extension DetailViewController: DetailNavigator {
+    func gotoSettings() {
         print("설정으로 이동!!")
     }
     
-    @objc func goBack() {
+    func goBack() {
         dismiss(animated: true, completion: nil)
         navigationController?.popViewController(animated: true)
     }

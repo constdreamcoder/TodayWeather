@@ -13,43 +13,149 @@ import RxDataSources
 import RxRealm
 import RxCocoa
 
+protocol SearchUserEvent: AnyObject {
+    func showTableView(isHidden: Bool)
+    func goBackToHome()
+    func resignSearchBarFromFirstResponder()
+    func showInfoWindowOnMarker(latitude: Double, longitude: Double, address: Address, addressForSearchNextForecast: String)
+    func moveToUser()
+}
+
 final class SearchViewModel: ViewModelType {
-    struct Input {}
+    struct Input {
+        let goBackBtnTapped: Driver<Void>
+        let searchBarTextInput: Driver<String>
+        let textDidBeginEditing: Driver<Void>
+        let textDidEndEditing: Driver<Void>
+        let searchButtonClicked: Driver<Void>
+        let addressSelected: Driver<IndexPath>
+        let moveToUserBtnTapped: Driver<Void>
+    }
     
     struct Output {
+        let goBackToHome: Driver<Void>
+        let textDidBeginEditing: Driver<Void>
+        let textDidEndEditing: Driver<Void>
+        let searchButtonClicked: Driver<Void>
         let userLocation: Driver<ConvertXY.LatXLngY>
         let searchDataSectionList: Driver<[SearchDataSection]>
         let infoWindowContents: Driver<String>
-        let searchDataSectionListRelay: BehaviorRelay<[SearchDataSection]>
+        let addressSelected: Driver<IndexPath>
+        let moveToUser: Driver<Void>
+        let searchedTextData: BehaviorRelay<String>
     }
     
     func transform(input: Input) -> Output {
+        let goBackToHome = input.goBackBtnTapped.do { [weak self] _ in
+            guard let weakSelf = self else { return }
+            weakSelf.delegate?.goBackToHome()
+        }
+        
+        input.searchBarTextInput.asObservable()
+//            .debounce(.milliseconds(300), scheduler: MainScheduler.instance) // 입력이 멈춘 후 0.3초 기다림
+//            .distinctUntilChanged() // 이전 값과 같은 값은 무시
+            .map { [weak self] searchText -> String in
+                guard let weakSelf = self else { return "" }
+                if searchText == "" {
+                    weakSelf.getRecentlySearchedResultList()
+                }
+                return searchText
+            }
+            .bind(to: searchTextRelay)
+            .disposed(by: dispostBag)
+        
+        let searchedTextData = searchTextRelay
+        
+        let textDidBeginEditing = input.textDidBeginEditing
+            .do { [weak self] _ in
+                guard let weakSelf = self else { return }
+                weakSelf.delegate?.showTableView(isHidden: false)
+                if weakSelf.searchTextRelay.value != "" {
+                    weakSelf.isSearchMode = true
+                    weakSelf.searchAddressList()
+                } else if weakSelf.searchTextRelay.value == "" {
+                    weakSelf.isSearchMode = false
+                    weakSelf.getRecentlySearchedResultList()
+                }
+            }
+        
+        let textDidEndEditing = input.textDidEndEditing.do { _ in
+            print("끝남")
+        }
+        
+        let searchButtonClicked = input.searchButtonClicked
+            .do { [weak self] _ in
+                guard let weakSelf = self else { return }
+                if weakSelf.searchTextRelay.value != "" {
+                    weakSelf.isSearchMode = true
+                    weakSelf.searchAddressList()
+                    weakSelf.delegate?.resignSearchBarFromFirstResponder()
+                }
+            }
+        
+        let addressSelectecd = input.addressSelected
+            .do(onNext: { [weak self] indexPath in
+                guard let weakSelf = self else { return }
+                let addressItems = weakSelf.searchDataSectionListRelay.value[0].items
+                
+                if addressItems.isEmpty { return }
+                
+                let selectedItem = addressItems[indexPath.row]
+                let addressForSearchNextForecast = selectedItem.addressForSearchNextForecast
+                let selectedAddress = selectedItem.address
+                
+                guard let longitude = Double(selectedAddress.x),
+                      let latitude = Double(selectedAddress.y)
+                else { return }
+                
+                weakSelf.getWeatherForecastInfosOfSelectedRegion(latitude: latitude, longitude: longitude)
+                
+                weakSelf.delegate?.showInfoWindowOnMarker(latitude: latitude, longitude: longitude, address: selectedAddress, addressForSearchNextForecast: addressForSearchNextForecast)
+                
+                weakSelf.delegate?.showTableView(isHidden: true)
+                weakSelf.updateRecentlySearchedAddressList(selectedAddress: selectedAddress, addressForSearchNextForecast: addressForSearchNextForecast)
+                weakSelf.delegate?.resignSearchBarFromFirstResponder()
+            })
+        
         let userLocation = userLocationRelay.asDriver()
         let searchDataSectionList = searchDataSectionListRelay.asDriver()
         let infoWindowContents = infoWindowContentsRelay.asDriver(onErrorJustReturn: "")
-        let searchDataSectionListRelay = searchDataSectionListRelay
         
+        let moveToUser = input.moveToUserBtnTapped
+            .do { [weak self] _ in
+                guard let weakSelf = self else { return }
+                weakSelf.delegate?.moveToUser()
+            }
         return Output(
+            goBackToHome: goBackToHome,
+            textDidBeginEditing: textDidBeginEditing,
+            textDidEndEditing: textDidEndEditing,
+            searchButtonClicked: searchButtonClicked,
             userLocation: userLocation,
-            searchDataSectionList: searchDataSectionList, 
+            searchDataSectionList: searchDataSectionList,
             infoWindowContents: infoWindowContents,
-            searchDataSectionListRelay: searchDataSectionListRelay
+            addressSelected: addressSelectecd, 
+            moveToUser: moveToUser, 
+            searchedTextData: searchedTextData
         )
     }
     
-    private let geolocationService: GeolocationService
-    private let dailyWeatherForecastService: DailyWeatherForecastService
-    private let realtimeForcastService: RealtimeForcastService
-    private let recentlySearchedAddressService: RecentlySearchedAddressService
+    private let geolocationService: GeolocationServiceModel
+    private let dailyWeatherForecastService: DailyWeatherForecastServiceModel
+    private let realtimeForcastService: RealtimeForecastServiceModel
+    private let recentlySearchedAddressService: RecentlySearchedAddressServiceModel
     
     private var userLocationRelay = BehaviorRelay<ConvertXY.LatXLngY>(value: ConvertXY.LatXLngY())
     private var searchDataSectionListRelay = BehaviorRelay<[SearchDataSection]>(value: [])
     private var infoWindowContentsRelay = PublishRelay<String>()
-
-    private var dispostBag = DisposeBag()
-
-    var searchText: String = ""
+    private var searchTextRelay = BehaviorRelay<String>(value: "")
     
+    var testRelay = BehaviorRelay<String>(value: "")
+    
+    private var dispostBag = DisposeBag()
+    
+    weak var delegate: SearchUserEvent?
+        
     private var _isSearchMode: Bool = false
     var isSearchMode: Bool {
         get {
@@ -61,12 +167,12 @@ final class SearchViewModel: ViewModelType {
     }
     
     private var userLocation: ConvertXY.LatXLngY?
-
+    
     init(
-        geolocationService: GeolocationService,
-        dailyWeatherForecastService: DailyWeatherForecastService,
-        realtimeForcastService: RealtimeForcastService,
-        recentlySearchedAddressService: RecentlySearchedAddressService,
+        geolocationService: GeolocationServiceModel,
+        dailyWeatherForecastService: DailyWeatherForecastServiceModel,
+        realtimeForcastService: RealtimeForecastServiceModel,
+        recentlySearchedAddressService: RecentlySearchedAddressServiceModel,
         userLocation: ConvertXY.LatXLngY
     ) {
         self.geolocationService = geolocationService
@@ -84,7 +190,9 @@ final class SearchViewModel: ViewModelType {
     
     func getRecentlySearchedResultList() {
         let recentlySearchedAddressList = recentlySearchedAddressService.fetchRecentlySearchedAddressList()
-        Observable.changeset(from:recentlySearchedAddressList)
+        
+        Observable.changeset(from: recentlySearchedAddressList)
+            .take(1)
             .map { [weak self] results, changes -> [SearchedRegion] in
                 guard let weakSelf = self else { return [] }
                 if let changes = changes {
@@ -129,16 +237,16 @@ final class SearchViewModel: ViewModelType {
     }
     
     func searchAddressList() {
-        geolocationService.fetchGeolocationRx(query: searchText)
+        geolocationService.fetchGeolocationRx(query: searchTextRelay.value)
+            .observe(on: ConcurrentDispatchQueueScheduler(queue: .global()))
             .map{ [weak self] addressList -> [SearchedRegion] in
                 guard let weakSelf = self else { return [] }
-                
                 var searchedRegionList: [SearchedRegion] = []
                 addressList.forEach { address in
                     let siDo = address.addressElements[0].shortName
                     let siGuGun = address.addressElements[1].shortName
                     let searchedRegion = SearchedRegion(
-                        address: address, 
+                        address: address,
                         addressForSearchNextForecast: siDo + " " + siGuGun,
                         lowestTemperatureForToday: 0,
                         highestTemperatureForToday: 0,

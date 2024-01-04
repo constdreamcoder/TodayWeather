@@ -12,6 +12,12 @@ import RxDataSources
 import RxCocoa
 import UIKit
 
+
+protocol DetailNavigator: AnyObject {
+    func gotoSettings()
+    func goBack()
+}
+
 struct NextForecastItem {
     var date: Date?
     var temperatureItem: NextForecastTemperatureItem?
@@ -20,42 +26,52 @@ struct NextForecastItem {
 
 final class DetailViewModel: ViewModelType {
    
-    struct Input {}
+    struct Input {
+        let goBackBtnTapped: Driver<Void>
+    }
     
     struct Output {
+        let goBack: Driver<Void>
         let todayWeatherList: Driver<[TodayWeatherDataSection]>
         let nextForecastList: Driver<[NextForecastItem]>
     }
     
     func transform(input: Input) -> Output {
+        let goBack = input.goBackBtnTapped.do { [weak self] _ in
+            guard let weakSelf = self else { return }
+            weakSelf.delegate?.goBack()
+        }
         let todayWeatherList = todayWeatherDataSectionListRelay.asDriver()
         let nextForecastList = nextForecastListRelay.asDriver()
         
         return Output(
+            goBack: goBack,
             todayWeatherList: todayWeatherList,
             nextForecastList: nextForecastList
         )
     }
         
-    private let realtimeForcastService: RealtimeForcastService
-    private let dailyWeatherForecastService: DailyWeatherForecastService
-    private let temperatureForecastService: TemperatureForecastService
-    private let skyConditionForecastService: SkyConditionForecastService
-    private let regionCodeSearchingService: RegionCodeSearchingService
-    
+    private let realtimeForcastService: RealtimeForecastServiceModel
+    private let dailyWeatherForecastService: DailyWeatherForecastServiceModel
+    private let temperatureForecastService: TemperatureForecastServiceModel
+    private let skyConditionForecastService: SkyConditionForecastServiceModel
+    private let regionCodeSearchingService: RegionCodeSearchingServiceModel
+        
     private var todayWeatherDataSectionListRelay = BehaviorRelay<[TodayWeatherDataSection]>(value: [])
     private var nextForecastListRelay = BehaviorRelay<[NextForecastItem]>(value: [])
     
     private var dispostBag = DisposeBag()
     
     private var userLocation: ConvertXY.LatXLngY?
+    
+    weak var delegate: DetailNavigator?
 
     init(
-        realtimeForcastService: RealtimeForcastService,
-        dailyWeatherForecastService: DailyWeatherForecastService,
-        temperatureForecastService: TemperatureForecastService,
-        skyConditionForecastService: SkyConditionForecastService,
-        regionCodeSearchingService: RegionCodeSearchingService,
+        realtimeForcastService: RealtimeForecastServiceModel,
+        dailyWeatherForecastService: DailyWeatherForecastServiceModel,
+        temperatureForecastService: TemperatureForecastServiceModel,
+        skyConditionForecastService: SkyConditionForecastServiceModel,
+        regionCodeSearchingService: RegionCodeSearchingServiceModel,
         userLocation: ConvertXY.LatXLngY,
         koreanFullAdress: String
     ) {
@@ -64,7 +80,7 @@ final class DetailViewModel: ViewModelType {
         self.temperatureForecastService = temperatureForecastService
         self.skyConditionForecastService = skyConditionForecastService
         self.regionCodeSearchingService = regionCodeSearchingService
-        
+                
         self.userLocation = userLocation
     
         setupTodayWeatherList(nx: userLocation.x, ny: userLocation.y)
@@ -91,7 +107,6 @@ extension DetailViewModel {
     
     func setupTodayWeatherList(nx: Int, ny: Int) {
         realtimeForcastService.fetchRealtimeForecastsRx(nx: nx, ny: ny)
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .default))
             .map { items -> [TodayWeatherDataSection] in
                 let todayWeatherForecastList = items.getTodayWeatherForecastList()
                 return [
@@ -156,6 +171,7 @@ extension DetailViewModel {
                 print("fetch is done")
                 return nextForecastList
             }
+            .retry(3)
             .bind(to: nextForecastListRelay)
             .disposed(by: dispostBag)
     }

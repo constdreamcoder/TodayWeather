@@ -9,7 +9,11 @@ import Alamofire
 import RxSwift
 import Foundation
 
-final class GeolocationService {
+protocol GeolocationServiceModel {
+    func fetchGeolocationRx(query: String?) -> Observable<[Address]>
+}
+
+final class GeolocationService: GeolocationServiceModel {
     init() {}
     
     func fetchGeolocationRx(

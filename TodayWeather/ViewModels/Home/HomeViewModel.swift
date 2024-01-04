@@ -18,7 +18,6 @@ protocol HomeNavigator: AnyObject {
 
 final class HomeViewModel: NSObject, ViewModelType {
     struct Input {
-//        let triggerAPI: Observable<Void>
         let goToNMapTapped: Driver<Void>
         let goToDetailVCTapped: Driver<Void>
     }
@@ -26,7 +25,7 @@ final class HomeViewModel: NSObject, ViewModelType {
     struct Output {
         let currentWeatherCondition: Driver<WeatherConditionOfCurrentLocation>
         let currentAddressOfLocation: Driver<String>
-        let gotoSearchVC: Driver<Void>
+        let goToSearchVC: Driver<Void>
         let goToDetailVC: Driver<Void>
         let triggerForecastReportAPIs: BehaviorRelay
         <(userLocation:ConvertXY.LatXLngY, koreanFullAdress: String)>
@@ -35,7 +34,7 @@ final class HomeViewModel: NSObject, ViewModelType {
     func transform(input: Input) -> Output {
         let currentWeatherCondition = currentWeatherConditionRelay.asDriver()
         let currentAddressOfLocation = currentAddressOfLocationRelay.asDriver()
-        let gotoSearchVC = input.goToNMapTapped.do { [weak self] _ in
+        let goToSearchVC = input.goToNMapTapped.do { [weak self] _ in
             guard let weakSelf = self else { return }
             weakSelf.delegate?.gotoSearchVC()
         }
@@ -48,15 +47,15 @@ final class HomeViewModel: NSObject, ViewModelType {
         return Output(
             currentWeatherCondition: currentWeatherCondition,
             currentAddressOfLocation: currentAddressOfLocation, 
-            gotoSearchVC: gotoSearchVC,
-            goToDetailVC: goToDetailVC, 
+            goToSearchVC: goToSearchVC,
+            goToDetailVC: goToDetailVC,
             triggerForecastReportAPIs: triggerForecastReportAPIs
         )
     }
     
-    private let realtimeForcastService: RealtimeForcastService
-    private let koreanAddressService: KoreanAddressService
-    private let lManager: CLLocationManager
+    private let realtimeForecastService: RealtimeForecastServiceModel
+    private let koreanAddressService: KoreanAddressServiceModel
+    private let locationManager: CLLocationManager
     
     weak var delegate: HomeNavigator?
     
@@ -70,13 +69,13 @@ final class HomeViewModel: NSObject, ViewModelType {
     var userLocation: ConvertXY.LatXLngY?
         
     init(
-        realtimeForcastService: RealtimeForcastService,
-        koreanAddressService: KoreanAddressService,
+        realtimeForecastService: RealtimeForecastServiceModel,
+        koreanAddressService: KoreanAddressServiceModel,
         locationManager: CLLocationManager
     ) {
-        self.realtimeForcastService = realtimeForcastService
+        self.realtimeForecastService = realtimeForecastService
         self.koreanAddressService = koreanAddressService
-        self.lManager = locationManager
+        self.locationManager = locationManager
         super.init()
         
         self.setLocationManager()
@@ -86,33 +85,34 @@ final class HomeViewModel: NSObject, ViewModelType {
 // MARK: - 사용자 위치 관련 메소드
 extension HomeViewModel: CLLocationManagerDelegate {
     func setLocationManager() {
-        lManager.delegate = self
-        lManager.desiredAccuracy = kCLLocationAccuracyBest
-        lManager.requestWhenInUseAuthorization()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestWhenInUseAuthorization()
         DispatchQueue.global().async { [weak self] in
             guard let weakSelf = self else { return }
             let locationServiceEnabled = CLLocationManager.locationServicesEnabled()
             if locationServiceEnabled {
-                weakSelf.lManager.startUpdatingLocation()
+                weakSelf.locationManager.startUpdatingLocation()
             } else {
                 print("위치 서비스 허용 off")
             }
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
             manager.stopUpdatingLocation()
             print("위치 업데이트")
             print("위도 : \(location.coordinate.latitude)")
             print("경도 : \(location.coordinate.longitude)")
+        
             userLocation = ConvertXY().convertGRID_GPS(
                 mode: .TO_GRID,
                 lat_X: location.coordinate.latitude,
                 lng_Y: location.coordinate.longitude
             )
             
-            realtimeForcastService.fetchRealtimeForecastsRx(nx: userLocation!.x, ny: userLocation!.y)
+            realtimeForecastService.fetchRealtimeForecastsRx(nx: userLocation!.x, ny: userLocation!.y)
                 .observe(on: ConcurrentDispatchQueueScheduler(queue: .global()))
                 .map { items in
                     return items.getCurrentWeatherConditionInfos()
@@ -129,8 +129,6 @@ extension HomeViewModel: CLLocationManagerDelegate {
                 }
                 .bind(to: currentAddressOfLocationRelay)
                 .disposed(by: dispostBag)
-            
-            
         }
     }
     
@@ -140,8 +138,7 @@ extension HomeViewModel: CLLocationManagerDelegate {
     
     // 사용자 위치 접근 상태 확인 메소드
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse && manager.authorizationStatus == .authorizedAlways {
-            
+        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
         }
     }
 }

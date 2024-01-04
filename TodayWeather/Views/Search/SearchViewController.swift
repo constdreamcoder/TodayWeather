@@ -17,24 +17,35 @@ final class SearchViewController: UIViewController {
     
     // TODO: - 추후 ViewModel로 이동시키기
     var mapView: NMFMapView?
-//    var locationManager: CLLocationManager = HomeViewModel.shared.locationManager
     var marker = NMFMarker()
     var currentLocationOfUser: NMGLatLng?
     var searchedLocation: NMGLatLng?
     var cameraUpdate: NMFCameraUpdate?
     var infoWindow: NMFInfoWindow?
     
+    private lazy var leftBarButton: UIButton = {
+        let button = UIButton()
+        button.setImage(
+            UIImage(systemName: "arrow.left")?
+                .withTintColor(
+                    UIColor(named: Colors.textDark)!,
+                    renderingMode: .alwaysOriginal),
+            for: .normal
+        )
+        button.setTitle("", for: .normal)
+        return button
+    }()
+    
     private lazy var searchTableView: UITableView = {
         let tableView = UITableView()
-        
-        tableView.delegate = self
-        
+                
         tableView.register(SearchTableViewCell.self, forCellReuseIdentifier: SearchTableViewCell.identifier)
         
         tableView.isHidden = true
         tableView.backgroundColor = .white
         tableView.separatorStyle = .none
         tableView.showsVerticalScrollIndicator = false
+        tableView.estimatedRowHeight = 60
         
         return tableView
     }()
@@ -42,12 +53,11 @@ final class SearchViewController: UIViewController {
     private lazy var searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.sizeToFit()
-        searchBar.delegate = self
         searchBar.returnKeyType = .done
         searchBar.placeholder = "지역명을 입력해보세요"
         searchBar.tintColor = .black
         searchBar.setImage(UIImage(), for: UISearchBar.Icon.search, state: .normal)
-        searchBar.searchTextField.backgroundColor = UIColor.clear
+        searchBar.searchTextField.backgroundColor = .clear
         return searchBar
     }()
     
@@ -64,7 +74,6 @@ final class SearchViewController: UIViewController {
         button.setImage(UIImage(named: Assets.focusIcon)?.withTintColor(UIColor(named: Colors.textDark)!, renderingMode: .alwaysOriginal), for: .normal)
         button.imageView?.contentMode = .scaleToFill
         button.backgroundColor = .white
-        button.addTarget(self, action: #selector(moveToUser), for: .touchUpInside)
         return button
     }()
     
@@ -73,11 +82,19 @@ final class SearchViewController: UIViewController {
     private var searchViewModel: SearchViewModel
     private var detailViewModel: DetailViewModel
     
-    private lazy var input = SearchViewModel.Input()
+    private lazy var input = SearchViewModel.Input(
+        goBackBtnTapped: leftBarButton.rx.tap.asDriver(),
+        searchBarTextInput: searchBar.rx.text.orEmpty.asDriver(),
+        textDidBeginEditing: searchBar.rx.textDidBeginEditing.asDriver(),
+        textDidEndEditing: searchBar.rx.textDidEndEditing.asDriver(),
+        searchButtonClicked: searchBar.rx.searchButtonClicked.asDriver(),
+        addressSelected: searchTableView.rx.itemSelected.asDriver(),
+        moveToUserBtnTapped: moveToUserLocationButton.rx.tap.asDriver()
+    )
     private lazy var output = searchViewModel.transform(input: input)
     
     private var disposeBag = DisposeBag()
-    
+
     init(
         searchViewModel: SearchViewModel,
         detailViewModel: DetailViewModel
@@ -86,6 +103,8 @@ final class SearchViewController: UIViewController {
         self.detailViewModel = detailViewModel
         
         super.init(nibName: nil, bundle: nil)
+        
+        searchViewModel.delegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -144,15 +163,10 @@ private extension SearchViewController {
     }
     
     func setupNavigationBar() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "arrow.left")?.withTintColor(UIColor(named: Colors.textDark)!, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(goBackToHome))
+        navigationItem.leftBarButtonItem = .init(customView: leftBarButton)
         navigationItem.titleView = searchBar
         navigationItem.titleView?.backgroundColor = .white
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "mic.fill")?.withTintColor(UIColor(named: Colors.textDark)!, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(voiceInput))
-    }
-    
-    func showTableView(isHidden: Bool) {
-        searchTableView.isHidden = isHidden
-        bottomSupplimentaryView.isHidden = isHidden
+//        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "mic.fill")?.withTintColor(UIColor(named: Colors.textDark)!, renderingMode: .alwaysOriginal), style: .plain, target: self, action: #selector(voiceInput))
     }
     
     func updateViews() {
@@ -168,83 +182,121 @@ private extension SearchViewController {
         output.searchDataSectionList
             .drive(searchTableView.rx.items(dataSource: searchTableViewDataSource))
             .disposed(by: disposeBag)
+        
+        output.goBackToHome
+            .drive()
+            .disposed(by: disposeBag)
+        
+        output.textDidBeginEditing
+            .drive()
+            .disposed(by: disposeBag)
+        
+        output.textDidEndEditing
+            .drive()
+            .disposed(by: disposeBag)
+        
+        output.searchButtonClicked
+            .drive()
+            .disposed(by: disposeBag)
+        
+        output.addressSelected
+            .drive()
+            .disposed(by: disposeBag)
+        
+        output.moveToUser
+            .drive()
+            .disposed(by: disposeBag)
     }
 }
 
 // MARK: - 이벤트 관련 메소드
-private extension SearchViewController {
-    @objc func goBackToHome() {
+extension SearchViewController: SearchUserEvent {
+    func goBackToHome() {
         navigationController?.popViewController(animated: true)
     }
     
-    @objc func voiceInput() {
-        print("마이크로 입력")
+    func resignSearchBarFromFirstResponder() {
+        searchBar.resignFirstResponder()
     }
     
-    @objc func moveToUser() {
+    func showTableView(isHidden: Bool) {
+        searchTableView.isHidden = isHidden
+        bottomSupplimentaryView.isHidden = isHidden
+    }
+    
+    // MARK: - 맵 표시 메소드
+    // 정보창 표시
+    func showInfoWindowOnMarker(latitude: Double, longitude: Double, address: Address, addressForSearchNextForecast: String) {
+        
+        resetInfoView()
+        
+        infoWindow = NMFInfoWindow()
+        
+        // 터치 이벤트 추가
+        let handler = { [weak self] (overlay: NMFOverlay) -> Bool in
+            guard let weakSelf = self else { return false }
+            if let infoWindow = overlay as? NMFInfoWindow {
+                let detailVC = DetailViewController(detailViewModel: weakSelf.detailViewModel)
+                weakSelf.navigationController?.pushViewController(detailVC, animated: true)
+            }
+            return true
+        }
+        infoWindow?.touchHandler = handler
+        
+        let dataSource = NMFInfoWindowDefaultTextSource.data()
+        
+        DispatchQueue.global().async { [weak self, address] in
+            guard let weakSelf = self else { return }
+            let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
+           
+            print("address: \(address.roadAddress)")
+            var koreanFullAdress: String = ""
+            if address.addressElements.isEmpty {
+                // 최근 검색을 조회하는 경우
+                koreanFullAdress = addressForSearchNextForecast
+            } else {
+                // 주소로 검색한 경우
+                koreanFullAdress = address.addressElements[0].shortName + " " + address.addressElements[1].shortName
+            }
+            print("koreanFullAdress: \(koreanFullAdress)")
+            weakSelf.detailViewModel.setupNextForecastList(koreanFullAdress: addressForSearchNextForecast, latitude: latitude, longitude: longitude)
+            
+            // 오늘 예보 및 내일 예보 데이터 호출
+            weakSelf.detailViewModel.setupTodayWeatherList(nx: convertedXY.x, ny: convertedXY.y)
+        }
+        
+        // TODO: - 성능 개선하기
+        output.infoWindowContents.asObservable()
+            .observe(on: MainScheduler.instance)
+            .catchAndReturn("")
+            .take(1)
+            .bind(onNext: { [weak self, dataSource, latitude, longitude, address] title in
+                guard let weakSelf = self else { return }
+                
+                // 마커 표시를 위한 설정
+                weakSelf.setupMarkerOnMap(latitude: latitude, longitude: longitude)
+                dataSource.title = title
+                weakSelf.infoWindow?.dataSource = dataSource
+                weakSelf.infoWindow?.open(with: weakSelf.marker)
+                
+                weakSelf.searchBar.text = address.roadAddress
+                weakSelf.output.searchedTextData.accept(address.roadAddress)
+                weakSelf.updateCamera(latitude: latitude, longitude: longitude)
+                weakSelf.resetCameraUpdate()
+                print("drive")
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    func moveToUser() {
         updateCamera(latitude: currentLocationOfUser!.lat, longitude: currentLocationOfUser!.lng)
         resetCameraUpdate()
     }
 }
 
-// MARK: TableView 관련 메소드
-extension SearchViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 60
-    }
-    
-    // TODO: - SearchViewModel로 옮기기
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedItem = output.searchDataSectionListRelay.value[0].items[indexPath.row]
-        let addressForSearchNextForecast = selectedItem.addressForSearchNextForecast
-        let selectedAddress = selectedItem.address
- 
-        guard let longitude = Double(selectedAddress.x),
-              let latitude = Double(selectedAddress.y)
-        else { return }
-    
-        searchViewModel.getWeatherForecastInfosOfSelectedRegion(latitude: latitude, longitude: longitude)            
-
-        showInfoWindowOnMarker(latitude: latitude, longitude: longitude, address: selectedAddress, addressForSearchNextForecast: addressForSearchNextForecast)
-        
-        showTableView(isHidden: true)
-        searchViewModel.updateRecentlySearchedAddressList(selectedAddress: selectedAddress, addressForSearchNextForecast: addressForSearchNextForecast)
-        
-        searchBar.resignFirstResponder()
-    }
-}
-
-// Search Bar 관련 메소드
-extension SearchViewController: UISearchBarDelegate {
-    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        showTableView(isHidden: false)
-        if searchBar.text != "" {
-            searchViewModel.isSearchMode = true
-            searchViewModel.searchAddressList()
-        } else if searchBar.text == "" {
-            searchViewModel.isSearchMode = false
-            searchViewModel.getRecentlySearchedResultList()
-        }
-    }
-    
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        searchViewModel.searchText = searchText
-        searchViewModel.isSearchMode = false
-        if searchText == "" {
-            searchViewModel.getRecentlySearchedResultList()
-        }
-    }
-    
-    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-        print("끝남")
-    }
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        if searchBar.text != "" {
-            searchViewModel.isSearchMode = true
-            searchViewModel.searchAddressList()
-            searchBar.resignFirstResponder()
-        }
+private extension SearchViewController {
+    @objc func voiceInput() {
+        print("마이크로 입력")
     }
 }
 
@@ -286,64 +338,6 @@ private extension SearchViewController {
         marker.mapView = mapView
     }
     
-    // 정보창 표시
-    func showInfoWindowOnMarker(latitude: Double, longitude: Double, address: Address, addressForSearchNextForecast: String) {
-        
-        resetInfoView()
-        
-        infoWindow = NMFInfoWindow()
-        
-        // 터치 이벤트 추가
-        let handler = { [weak self] (overlay: NMFOverlay) -> Bool in
-            guard let weakSelf = self else { return false }
-            if let infoWindow = overlay as? NMFInfoWindow {
-                let detailVC = DetailViewController(detailViewModel: weakSelf.detailViewModel)
-                weakSelf.navigationController?.pushViewController(detailVC, animated: true)
-            }
-            return true
-        }
-        infoWindow?.touchHandler = handler
-        
-        let dataSource = NMFInfoWindowDefaultTextSource.data()
-        
-        DispatchQueue.global().async { [weak self, address] in
-            guard let weakSelf = self else { return }
-            // 오늘 예보 및 내일 예보 데이터 호출
-            let convertedXY = ConvertXY().convertGRID_GPS(mode: .TO_GRID, lat_X: latitude, lng_Y: longitude)
-            weakSelf.detailViewModel.setupTodayWeatherList(nx: convertedXY.x, ny: convertedXY.y)
-            
-            print("address: \(address.roadAddress)")
-            var koreanFullAdress: String = ""
-            if address.addressElements.isEmpty {
-                // 최근 검색을 조회하는 경우
-                koreanFullAdress = addressForSearchNextForecast
-            } else {
-                // 주소로 검색한 경우
-                koreanFullAdress = address.addressElements[0].shortName + " " + address.addressElements[1].shortName
-            }
-            print("koreanFullAdress: \(koreanFullAdress)")
-            weakSelf.detailViewModel.setupNextForecastList(koreanFullAdress: addressForSearchNextForecast, latitude: latitude, longitude: longitude)
-        }
-       
-        // TODO: - 성능 개선하기
-        output.infoWindowContents
-            .drive(onNext: { [weak self, dataSource, latitude, longitude, address] title in
-                guard let weakSelf = self else { return }
-                
-                // 마커 표시를 위한 설정
-                weakSelf.setupMarkerOnMap(latitude: latitude, longitude: longitude)
-                dataSource.title = title
-                weakSelf.infoWindow?.dataSource = dataSource
-                weakSelf.infoWindow?.open(with: weakSelf.marker)
-                
-                weakSelf.searchBar.text = address.roadAddress
-                weakSelf.searchViewModel.searchText = address.roadAddress
-                weakSelf.updateCamera(latitude: latitude, longitude: longitude)
-                weakSelf.resetCameraUpdate()
-                print("drive")
-            })
-            .disposed(by: disposeBag)
-    }
     
     // 정보창 초기화
     func resetInfoView() {

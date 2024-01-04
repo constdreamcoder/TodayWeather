@@ -8,7 +8,13 @@
 import RealmSwift
 import RxSwift
 
-final class RecentlySearchedAddressService {
+protocol RecentlySearchedAddressServiceModel {
+    func addNewlySearchedAddress(newAddress: Address, addressForSearchNextForecast: String)
+    func fetchRecentlySearchedAddressList() -> Results<RecentlySearchedAddressModel>
+    func deleteRecentlySearchedAddress(index: Int)
+}
+
+final class RecentlySearchedAddressService: RecentlySearchedAddressServiceModel {
     private let database: Realm
     
     init() {

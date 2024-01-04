@@ -7,7 +7,12 @@
 
 import Foundation
 
-final class RegionCodeSearchingService {
+protocol RegionCodeSearchingServiceModel {
+    func searchRegionCodeForTemperature(koreanFullAdress: String) -> String
+    func searchRegionCodeForSkyCondition(koreanFullAdress: String) -> String
+}
+
+final class RegionCodeSearchingService: RegionCodeSearchingServiceModel {
     private let regIdForSkyUrl: URL! = Bundle.main.url(forResource: "RegIdForSky", withExtension: "plist")
     private let regIdForTempUrl: URL! = Bundle.main.url(forResource: "RegIdForTemp", withExtension: "plist")
     
